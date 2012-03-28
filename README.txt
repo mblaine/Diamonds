@@ -67,7 +67,7 @@ released by Varcon Systems in 1992.
 
 >>> Change log
 
-	Marcth 27, 2012
+    March 27, 2012
        Moved to repository on GitHub
 
     May 5, 2008 (v0.4)
