@@ -10,14 +10,14 @@
 // THIS WILL MAKE THE PROGRAM USE THE COMMON CONTROLS
 // LIBRARY VERSION 6.0 (IF IT IS AVAILABLE)
 //
-1 24 "Diamonds.exe.Manifest"
+1 24 "Diamonds2.exe.Manifest"
 
 //
 // TO CHANGE VERSION INFORMATION, EDIT PROJECT OPTIONS...
 //
 1 VERSIONINFO
-FILEVERSION 1,0,0,0
-PRODUCTVERSION 1,0,0,0
+FILEVERSION 2,0,0,0
+PRODUCTVERSION 2,0,0,0
 FILETYPE VFT_APP
 {
   BLOCK "StringFileInfo"
@@ -26,7 +26,7 @@ FILETYPE VFT_APP
 		 {
 			 VALUE "CompanyName", "M.J.B."
 			 VALUE "FileVersion", ""
-			 VALUE "FileDescription", "Diamonds"
+			 VALUE "FileDescription", "Diamonds v2"
 			 VALUE "InternalName", ""
 			 VALUE "LegalCopyright", ""
 			 VALUE "LegalTrademarks", ""

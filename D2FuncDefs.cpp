@@ -1,75 +1,10 @@
-/*
- * DIAMONDS.CPP
- * created by Matthew Blaine, November 2005
- *
- * This WIN32 application uses classes 'Ball', 'Field', and 'Block' and its
- * subclasses to orchestrate a full-blown, 30-level game of 'Diamonds'. To
- * play Diamonds, the player uses the left and right arrow keys to direct a
- * constantly bouncing up-and-down ball through the playing field. To beat a
- * a level, destroy all the Diamond blocks, derived from the base class
- * 'Block'. To desroy a bock, simply cause the ball to make contact with it.
- * Diamond blocks cannot be destroyed until all color-blocks are destroyed.
- * These can only be destroyed if the ball matches the given block's color.
- * To change the ball's color, run into a 'key' block. There is no key block
- * to make the ball light blue, so remove those blocks first. If you hit a
- * key block, changing the ball's color, before all light blue blocks are
- * gone, you must run the ball into a 'skull' block, losing a life and
- * reseting the ball.
- *
- */
-
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
-#include <windowsx.h>
-#include <mmsystem.h>
-
-#include "Constants.h"
-#include "Field.h"
-#include "Ball.h"
-#include "Block.h"
+#include "D2Globals.h"
 #include "Resource_Diamonds.h"
-#include "HiScore.h"
-
-#define CLASSNAME "MJB_Diamonds"
-
-//global handles
-HWND myHandle = NULL;
-HINSTANCE hinst1 = NULL;
-HACCEL hmyaccel = NULL;
-HMENU hmenu = NULL;
-
-//handles to bitmaps
-HBITMAP ball_bmp = NULL;
-HBITMAP blocks_bmp = NULL;
-HBITMAP readout_bmp = NULL;
-HBITMAP logo_bmp = NULL;
-HBITMAP bkgrnd_bmp = NULL;
+#include "Surface.h"
+#include <ddraw.h>
+#include <dsound.h>
 
 
-//handle to brushes for drawing screen
-HBRUSH ltGray = NULL;
-HBRUSH gray = NULL;
-HBRUSH borderBrushes[7];
-
-//if a game is running
-bool gameOn = false;
-
-//if sound is on or off
-// - turned on in WM_CREATE
-bool sound = false;
-
-//high scores
-HiScore *scores = NULL;
-
-//for actual game
-Field *field = NULL;
-
-bool isPaused = false;
-
-//Device contexts
- HDC hdc;//screen(visible) HDC
- HDC hdcMem;//couterpart HDC in memory
- HDC hdcBuffer2;//secondary buffer HDC
 
 //prototypes
 LRESULT  CALLBACK WindowProc(HWND hwnd,UINT msg,WPARAM wparam,LPARAM lparam);
@@ -78,63 +13,15 @@ BOOL   CALLBACK AboutDlgProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam);
 void DrawScreen(Field *field, Ball *ball);
 void DrawMainMenu(HiScore *score);
 void RackUpTimeBonus();
-//begin WinMain//////////////////////////////////////////////////////////////
-int WINAPI WinMain(HINSTANCE hinstance, HINSTANCE hprevinstance,
-                                        LPSTR lpcmdline, int ncmdshow)
-{
-  WNDCLASSEX winclass;
-  MSG msg;
-  ATOM atom;
-  hinst1 = hinstance;
-  
-  winclass.cbSize = sizeof(WNDCLASSEX);
-  winclass.style = CS_DBLCLKS | CS_OWNDC | CS_HREDRAW | CS_VREDRAW;
-  winclass.lpfnWndProc = WindowProc;
-  winclass.cbClsExtra = 0;
-  winclass.cbWndExtra = 0;
-  winclass.hInstance = hinstance;
-  winclass.hIcon = LoadIcon(NULL, IDI_APPLICATION);
-  winclass.hCursor = LoadCursor(NULL, IDC_ARROW);
-  winclass.hbrBackground = (HBRUSH)GetStockObject(DKGRAY_BRUSH);
-  winclass.lpszMenuName = "MyMenu";
-  winclass.lpszClassName = CLASSNAME;
-  winclass.hIconSm = (HICON)LoadImage(GetModuleHandle(NULL),
-                         MAKEINTRESOURCE(PROG_ICON), IMAGE_ICON, 16, 16, 0);
 
-  atom=
-  
-   RegisterClassEx(&winclass);
+int InitDirectDraw();
+void CleanUpDirDraw();
+bool Flip();
 
-  if(!atom)
-  {return 0;}
-  
-  myHandle=
-  
-   CreateWindow(CLASSNAME,"Diamonds",WS_OVERLAPPED|WS_MINIMIZEBOX|
-      WS_CAPTION|WS_SYSMENU,CW_USEDEFAULT,CW_USEDEFAULT,WINWIDTH,
-      WINHEIGHT,NULL,NULL,hinstance,NULL);
-             
-  if(!myHandle)
-  {return 0;}
+int InitDirectSound();
+void CleanUpDirSound();
 
-  ShowWindow( myHandle, ncmdshow);
-
-  //load keyboard accelerator table
-  hmyaccel = LoadAccelerators(hinstance,"Accel");
-   
-  while( GetMessage(&msg,NULL,0,0) > 0 )
-  {
-  if (!TranslateAccelerator( myHandle, hmyaccel, &msg))//catch accel. keys
-     {
-     TranslateMessage(&msg);
-     DispatchMessage(&msg);
-     }
-  }
-  
-  return msg.wParam;
-  
-}//end WinMain///////////////////////////////////////////////////////////////
-
+/*WindowPROC****************************************************************/
 LRESULT CALLBACK WindowProc(HWND hwnd,UINT msg,WPARAM wparam,LPARAM lparam)
 {
  switch(msg)
@@ -145,15 +32,15 @@ LRESULT CALLBACK WindowProc(HWND hwnd,UINT msg,WPARAM wparam,LPARAM lparam)
            PostMessage(hwnd, WM_SETICON, ICON_BIG,
                 (LPARAM)LoadIcon(hinst1,MAKEINTRESOURCE(PROG_ICON)));
 
-           ball_bmp = LoadBitmap(hinst1,MAKEINTRESOURCE(BALL_BMP));
-           blocks_bmp = LoadBitmap(hinst1,MAKEINTRESOURCE(BLOCKS_BMP));
+           //load images
            readout_bmp = LoadBitmap(hinst1,MAKEINTRESOURCE(READOUT_BMP));
            logo_bmp = LoadBitmap(hinst1,MAKEINTRESOURCE(LOGO_BMP));
-           bkgrnd_bmp = LoadBitmap(hinst1,MAKEINTRESOURCE(BACKGROUND_BMP));
 
+           
+           //create brushes
            ltGray = (HBRUSH)GetStockObject(LTGRAY_BRUSH);
            gray = (HBRUSH)GetStockObject(GRAY_BRUSH);
-
+           
            borderBrushes[0] = CreateSolidBrush(RGB(0,204,255));//ltBlue
            borderBrushes[1] = CreateSolidBrush(RGB(0,36,255));//blue
            borderBrushes[2] = CreateSolidBrush(RGB(255,39,0));//red
@@ -164,19 +51,15 @@ LRESULT CALLBACK WindowProc(HWND hwnd,UINT msg,WPARAM wparam,LPARAM lparam)
            
            hmenu = GetMenu(hwnd);//get menu handle
            
-           //set up device contexts
-           hdc = GetDC(hwnd);//screen(visible) HDC
-           hdcMem = CreateCompatibleDC(hdc);//couterpart HDC in memory
-           hdcBuffer2 = CreateCompatibleDC(hdc);//secondary buffer HDC
-           
            //read in or create new hi scores file
            scores = new HiScore();
            fstream infile("hiscores.dat", ios::in | ios::binary);
            if(infile.is_open())// if opened sucssfully, read in values
            {scores->deserialize(infile);}
            infile.close();//else it'll just have the default values
-           
+
            PostMessage(hwnd,WM_COMMAND,GAME_SOUNDONOFF,0);
+
           }
           return 0;
           break;
@@ -188,23 +71,9 @@ LRESULT CALLBACK WindowProc(HWND hwnd,UINT msg,WPARAM wparam,LPARAM lparam)
              case KEY_NEW:
                   KillTimer(hwnd,MAINTIMER);
                   KillTimer(hwnd,BONUSTIMER);
-                  
-                  //reload all sounds
-                  MAKEINTRESOURCE(BOUNCESND);
-                  MAKEINTRESOURCE(COLORBLKSND);
-                  MAKEINTRESOURCE(COLORKEYSND);
-                  MAKEINTRESOURCE(DIAMONDSND);
-                  MAKEINTRESOURCE(DIESND);
-                  MAKEINTRESOURCE(LAUGHINGSND);
-                  MAKEINTRESOURCE(LEVELWONSND);
-                  MAKEINTRESOURCE(LOCKSND);
-                  MAKEINTRESOURCE(SMALLKEYSND);
-                  MAKEINTRESOURCE(REVERSESND);
-                  MAKEINTRESOURCE(TIMEBONUSSND);
-                  MAKEINTRESOURCE(ONEUPSND);
 
                   delete field; field = NULL;
-                  field = new Field;
+                  field = new Field();
                   
                   gameOn = true;
                   PostMessage(hwnd,WM_PAINT,0,0);
@@ -281,8 +150,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd,UINT msg,WPARAM wparam,LPARAM lparam)
                   KillTimer(hwnd,BONUSTIMER);
                   
                   if(sound)
-                  {PlaySound(MAKEINTRESOURCE(LAUGHINGSND),
-                                 hinst1,SND_RESOURCE|SND_ASYNC);}
+                  {laughing_snd->Play();}
 
                   //if high score
                   if(field->getScore() >= scores->daScores[9].score)
@@ -301,6 +169,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd,UINT msg,WPARAM wparam,LPARAM lparam)
              case HELP_ABOUT:
                   DialogBox(hinst1, "About", hwnd, AboutDlgProc);
                   break;
+             
              default:
                      break;
           }
@@ -308,7 +177,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd,UINT msg,WPARAM wparam,LPARAM lparam)
           break;
   case WM_PAINT:
           {
-            InvalidateRect(hwnd,NULL,FALSE);//invalidate entire rectangle
+            InvalidateRect(hwnd,NULL,TRUE);//invalidate entire rectangle
             if(gameOn)
             {DrawScreen(field,field->getBallPtr());}
             else
@@ -316,7 +185,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd,UINT msg,WPARAM wparam,LPARAM lparam)
           }
           return 0;
           break;
-  
+
   case WM_TIMER: 
           if(wparam==MAINTIMER)//if it's the main game timer
           {
@@ -341,6 +210,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd,UINT msg,WPARAM wparam,LPARAM lparam)
            }
 
            field->moveBall();
+
           }//end if playing
 
           //if ball died
@@ -355,8 +225,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd,UINT msg,WPARAM wparam,LPARAM lparam)
                 KillTimer(hwnd,MAINTIMER);
                 
                 if(sound)
-                PlaySound(MAKEINTRESOURCE(LAUGHINGSND),
-                                 hinst1,SND_RESOURCE|SND_ASYNC);
+                {laughing_snd->Play();}
                 
                 //if a high score
                 if(field->getScore() >= scores->daScores[9].score)
@@ -369,8 +238,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd,UINT msg,WPARAM wparam,LPARAM lparam)
            else
               {                
                 if(sound)
-                PlaySound(MAKEINTRESOURCE(DIESND),
-                                 hinst1,SND_RESOURCE|SND_ASYNC);
+                {die_snd->Play();}
                 
                 Sleep(1000);
                 field->decLives();
@@ -391,8 +259,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd,UINT msg,WPARAM wparam,LPARAM lparam)
                 KillTimer(hwnd,BONUSTIMER);
                 
                 if(sound)
-                {PlaySound(MAKEINTRESOURCE(LEVELWONSND),
-                                 hinst1,SND_RESOURCE|SND_ASYNC);}
+                {levelwon_snd->Play();}
                 Sleep(1200);
                 
                 RECT readouts;//area of readouts at bottom of screen
@@ -410,18 +277,15 @@ LRESULT CALLBACK WindowProc(HWND hwnd,UINT msg,WPARAM wparam,LPARAM lparam)
                 
                 SetTimer(hwnd,MAINTIMER,INTERVAL,NULL);                
                 SetTimer(hwnd,BONUSTIMER,BONUSINTERVAL,NULL);
-                InvalidateRect(hwnd,NULL,FALSE);//invlidate entire screen
                }
-               else // if no more levels left
+               else//no more levels
                {
                 KillTimer(hwnd,MAINTIMER);
-                KillTimer(hwnd,BONUSTIMER);        
-
+                KillTimer(hwnd,BONUSTIMER);
+                
                 if(sound)
-                {PlaySound(MAKEINTRESOURCE(LEVELWONSND),
-                                 hinst1,SND_RESOURCE|SND_ASYNC);}
+                {levelwon_snd->Play();}
                 Sleep(1200);
-
                 
                 RECT readouts;//area of readouts at bottom of screen
                 readouts.top = VERTINDENT + FIELDHEIGHT;
@@ -444,12 +308,12 @@ LRESULT CALLBACK WindowProc(HWND hwnd,UINT msg,WPARAM wparam,LPARAM lparam)
                 PostMessage(hwnd,WM_PAINT,0,0);
                }
            }//end if level won
-           
+
            DrawScreen(field,field->getBallPtr());//draw screen
-           
           }//end if MAINTIMER
 
-          if(wparam==BONUSTIMER)//if it's the bonus timer
+          //if it's the bonus timer
+          if(wparam==BONUSTIMER)
           {
             field->decTimeBonus();
             if(field->getTimeBonus()<=0)
@@ -457,36 +321,31 @@ LRESULT CALLBACK WindowProc(HWND hwnd,UINT msg,WPARAM wparam,LPARAM lparam)
           }
 
           return 0;
-          break;// end case WM_TIMER
+          break;//end case WM_TIMER
           
   case WM_DESTROY:
-          {
-
-           KillTimer(hwnd,MAINTIMER);       
+          {    
+           KillTimer(hwnd,MAINTIMER);
            KillTimer(hwnd,BONUSTIMER);
+           CleanUpDirDraw();
+           CleanUpDirSound();
 
            //saving 'scores' to file
            fstream outfile("hiscores.dat",ios::out|ios::binary);
-           if(outfile.is_open())// if opened sucssfully, save values
+           if(outfile.is_open())// if opened/created sucssfully, save values
            {scores->serialize(outfile);}
            outfile.close();//on error, just do nothing
 
            delete field; field = NULL;
            delete scores; scores = NULL;
-           DeleteObject(ball_bmp);
-           DeleteObject(blocks_bmp);
            DeleteObject(readout_bmp);
            DeleteObject(logo_bmp);
-           DeleteObject(bkgrnd_bmp);
            DeleteObject(ltGray);
            DeleteObject(gray);
+
            for(int i =0; i<7; i++)
            {DeleteObject(borderBrushes[i]);}
-           
-           DeleteDC(hdcMem);//give back memory DC
-           DeleteDC(hdcBuffer2);//give back 2nd buffer DC
-           ReleaseDC(hwnd,hdc);//give back screen DC
-       
+
            PostQuitMessage(0);
           }
           return 0;
@@ -522,14 +381,14 @@ switch(msg)
               //string to feed to set method
               string temp;
 
-              //get the length of the string to input
+              //get length of screen in text box
               int len=GetWindowTextLength(GetDlgItem(hwnd,NAME_INPUT));
-
+              
               if(len > 0)//if user input something
               {
                 char* inData;//to hold input
                 inData=(char*)GlobalAlloc(GPTR,len+1);//alocate char*
-                GetDlgItemText(hwnd,NAME_INPUT,inData,len+1);//fillit
+                GetDlgItemText(hwnd,NAME_INPUT,inData,len+1);//fill it
                 temp=inData;//feed to c++ string
                 GlobalFree((HANDLE)inData);//free memory for input
               }
@@ -538,10 +397,9 @@ switch(msg)
               temp = temp.substr(0,25);//limit name to 25 characters
               
               //enter the high score as a 'score' struct
-              score toEnter = {temp,
-                               field->getScore(),
-                               field->getCurrentLevel()};
-                               
+              score toEnter = { temp,
+                                field->getScore(),
+                                field->getCurrentLevel() };
               scores->enterScore(toEnter);
 
               EndDialog(hwnd, IDOK);
@@ -560,6 +418,7 @@ switch(msg)
             break;
     }
 }//END ENTER NAME DIALOG PROCEDURE///////////////////////////////////////////
+
 
 /*About Dialog Procedure****************************************************/
 BOOL CALLBACK AboutDlgProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam)
@@ -593,14 +452,18 @@ BOOL CALLBACK AboutDlgProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam)
 void DrawScreen(Field *field, Ball *ball)//to draw the screen while a game
 //              is in play
 {
-//BitBlt(to DC,to X,to Y,image width,height,from DC,from X,from Y,flags);
- 
- //playing field sized bitmap for 2nd buffer
- HBITMAP tempBitmap = CreateCompatibleBitmap(hdc, FIELDWIDTH,
-                                         FIELDHEIGHT + READOUTSHEIGHT);
- //catch old bitmap from secondary buffer as our field sized one goes in
- HBITMAP hbmOld2 =(HBITMAP) SelectObject(hdcBuffer2, tempBitmap);
- 
+ //Draw(toSurface,toX,toY,fromX,fromY,width=0,height=0)
+ //BitBlt(to DC,to X,to Y,image width,height,from DC,from X,from Y,flags);
+
+ if(SurfaceFront->IsLost() || SurfaceBack->IsLost())
+ {
+ CleanUpDirDraw();
+ InitDirectDraw();
+ }
+
+ HDC dXdc;//device context from DirectX
+ SurfaceBack->GetDC(&dXdc);
+
  //drawing color for screen border
  int index;
  if(ball!=NULL)
@@ -608,19 +471,41 @@ void DrawScreen(Field *field, Ball *ball)//to draw the screen while a game
  else
  {index = 0;}
  //border color; gotta catch old brush
- HBRUSH hbrushOld =(HBRUSH)SelectObject(hdcBuffer2,borderBrushes[index]);
- Rectangle(hdcBuffer2, 0, 0, FIELDWIDTH, FIELDHEIGHT);
+ HBRUSH hbrushOld =(HBRUSH)SelectObject(dXdc,borderBrushes[index]);
+ Rectangle(dXdc, 0, 0, FIELDWIDTH, FIELDHEIGHT);
  
+ //color 'readout' brush gray
+ SelectObject(dXdc, gray);//bkgrd color
+ Rectangle(dXdc, 0, FIELDHEIGHT, READOUTSWIDTH,
+                       FIELDHEIGHT+READOUTSHEIGHT);
+
+ //write labels for displays
+ SetBkMode(dXdc,TRANSPARENT);//let the background be transparent
+ TextOut(dXdc,NUMWIDTH,FIELDHEIGHT+VERTINDENT/2,"Score",5);
+ TextOut(dXdc,NUMWIDTH*9,FIELDHEIGHT+VERTINDENT/2,"Level",5);
+ TextOut(dXdc, (FIELDWIDTH-HASKEYWIDTH)/2,FIELDHEIGHT+VERTINDENT/2,
+        "Key", 3);
+ TextOut(dXdc,READOUTSWIDTH*.546,FIELDHEIGHT+VERTINDENT/2,
+        "Time Bonus", 10);
+ TextOut(dXdc,FIELDWIDTH-HORIZINDENT*2-LIVESWIDTH,
+        FIELDHEIGHT+VERTINDENT/2, "Balls", 5);
+        
+ TextOut(dXdc,NUMWIDTH*11 + 5,FIELDHEIGHT+VERTINDENT*2 + NUMHEIGHT/4,
+              field->getLevelName().c_str(),field->getLevelName().size() );
+
+ //cleaning up
+ SelectObject(dXdc,hbrushOld);
+ SurfaceBack->ReleaseDC(dXdc);
+ 
+
+
+
+
  //drawing background image
- //catch old bitmap as our background bitmap goes into memory DC
- HBITMAP hbmOld = (HBITMAP)SelectObject(hdcMem, bkgrnd_bmp);
- //the background image
- BitBlt(hdcBuffer2,HORIZINDENT,VERTINDENT,
-                 FIELDWIDTH,FIELDHEIGHT,hdcMem,0,0,SRCCOPY);
+
+ bkgrnd_surf->Draw(SurfaceBack,HORIZINDENT,VERTINDENT,0,0,792,480);
  
- //get 'blocks' bitmap
- SelectObject(hdcMem, blocks_bmp);
- 
+ //drawing field of blocks
  if(field != NULL)//if field exists
  {
  //draw all blocks to temporary bitmap in secondary buffer
@@ -635,120 +520,98 @@ void DrawScreen(Field *field, Ball *ball)//to draw the screen while a game
     int drawToX, drawToY;//coordinates to draw to
     drawToX = BLOCKWIDTH * x + HORIZINDENT;
     drawToY = BLOCKHEIGHT * y + VERTINDENT;
-
+    
     if(info.msg == MSG_DIAMOND)
-    { BitBlt(hdcBuffer2, drawToX, drawToY,
-                         BLOCKWIDTH, BLOCKHEIGHT, hdcMem, 0, 560, SRCCOPY);}
+    { blocks_surf->Draw(SurfaceBack, drawToX, drawToY, 0, 560,
+                         BLOCKWIDTH, BLOCKHEIGHT);}
     else if(info.msg == MSG_SKULL)
-    { BitBlt(hdcBuffer2, drawToX, drawToY,
-                         BLOCKWIDTH, BLOCKHEIGHT, hdcMem, 0, 0, SRCCOPY);}
+    { blocks_surf->Draw(SurfaceBack, drawToX, drawToY, 0, 0,
+                         BLOCKWIDTH, BLOCKHEIGHT);}
     else if(info.msg == MSG_SMALLKEY)
-    { BitBlt(hdcBuffer2, drawToX, drawToY,
-                         BLOCKWIDTH, BLOCKHEIGHT, hdcMem, 0, 600, SRCCOPY);}
+    { blocks_surf->Draw(SurfaceBack, drawToX, drawToY, 0, 600,
+                         BLOCKWIDTH, BLOCKHEIGHT);}
     else if(info.msg == MSG_LOCK)
-    { BitBlt(hdcBuffer2, drawToX, drawToY,
-                         BLOCKWIDTH, BLOCKHEIGHT, hdcMem, 0, 640, SRCCOPY);}
+    { blocks_surf->Draw(SurfaceBack, drawToX, drawToY, 0, 640, 
+                         BLOCKWIDTH, BLOCKHEIGHT);}
     else if(info.msg == MSG_SOLID)
-    { BitBlt(hdcBuffer2, drawToX, drawToY,
-                         BLOCKWIDTH, BLOCKHEIGHT, hdcMem, 0, 520, SRCCOPY);}
+    { blocks_surf->Draw(SurfaceBack, drawToX, drawToY, 0, 520,
+                         BLOCKWIDTH, BLOCKHEIGHT);}
     else if(info.msg == MSG_REVERSE)
-    { BitBlt(hdcBuffer2, drawToX, drawToY,
-                         BLOCKWIDTH, BLOCKHEIGHT, hdcMem, 0, 680, SRCCOPY);}
+    { blocks_surf->Draw(SurfaceBack, drawToX, drawToY, 0, 680,
+                         BLOCKWIDTH, BLOCKHEIGHT);}
     else if(info.msg == MSG_COLORCHANGEKEY)
-    { BitBlt(hdcBuffer2, drawToX, drawToY,//the math below is to
+    { blocks_surf->Draw(SurfaceBack, drawToX, drawToY,//the math below is to
                                                 //allign w/ image in
-                         BLOCKWIDTH, BLOCKHEIGHT, hdcMem, 0,//bitmap
-                         280 + BLOCKHEIGHT*(info.info-2),//info.info = color
-                         SRCCOPY);}
+                        0, 280 + BLOCKHEIGHT*(info.info-2),//bitmap
+                        BLOCKWIDTH, BLOCKHEIGHT );}//info.info = color
+
     else if(info.msg == MSG_COLORBLOCK)
-    { BitBlt(hdcBuffer2, drawToX, drawToY,//the math below is to
+    { blocks_surf->Draw(SurfaceBack, drawToX, drawToY,//the math below is to
                                                 //allign w/ image in
-                         BLOCKWIDTH, BLOCKHEIGHT, hdcMem, 0,//bitmap
-                         0 + BLOCKHEIGHT*(info.info),//info.info = color
-                         SRCCOPY);}
+                         0, 0 + BLOCKHEIGHT*(info.info),//bitmap
+                         BLOCKWIDTH, BLOCKHEIGHT);}//info.info = color
                          //end cycling through possible types
    }//end if ptr not null
   }//end for every x 
  }//end for every y
 }//end if field exists
  //done drawing blocks
-
-
- //move ball bitmap into memory DC
- SelectObject(hdcMem, ball_bmp);
  
   //NOW.. the ball, only if it exists
  if(ball != NULL && field->getGameState()!=BALLDIED)
  {
- //copy negative image so edges of ball image are transparent
- BitBlt(hdcBuffer2, ball->getXpos() + HORIZINDENT, 
-                    ball->getYpos() + VERTINDENT,
-                    BALLWIDTH, BALLHEIGHT, hdcMem, 0, 126, SRCAND);
  //copy ball from memory DC to correct place in temporary bitmap
- BitBlt(hdcBuffer2, ball->getXpos() + HORIZINDENT, 
+ ball_surf->Draw(SurfaceBack, ball->getXpos() + HORIZINDENT, 
                     ball->getYpos() + VERTINDENT,
-                    BALLWIDTH, BALLHEIGHT, hdcMem, 0,
-                    ((int)ball->getColor()-1)*BALLHEIGHT, SRCPAINT);
+                    0, ((int)ball->getColor()-1)*BALLHEIGHT,
+                    BALLWIDTH, BALLHEIGHT);
  }
  
   //NOW... the readouts at the bottom of the screen
-
-
- //color 'readout' brush gray
-
- SelectObject(hdcBuffer2, gray);//bkgrd color
- Rectangle(hdcBuffer2, 0, FIELDHEIGHT, READOUTSWIDTH,
-                       FIELDHEIGHT+READOUTSHEIGHT);
-
- //write labels for displays
- SetBkMode(hdcBuffer2,TRANSPARENT);//let the background be transparent
- TextOut(hdcBuffer2,NUMWIDTH,FIELDHEIGHT+VERTINDENT/2,"Score",5);
- TextOut(hdcBuffer2,NUMWIDTH*9,FIELDHEIGHT+VERTINDENT/2,"Level",5);
- TextOut(hdcBuffer2, (FIELDWIDTH-HASKEYWIDTH)/2,FIELDHEIGHT+VERTINDENT/2,
-        "Key", 3);
- TextOut(hdcBuffer2,READOUTSWIDTH*.546,FIELDHEIGHT+VERTINDENT/2,
-        "Time Bonus", 10);
- TextOut(hdcBuffer2,FIELDWIDTH-HORIZINDENT*2-LIVESWIDTH,
-        FIELDHEIGHT+VERTINDENT/2, "Balls", 5);
-
-  //images for readouts
- SelectObject(hdcMem, readout_bmp);
 
  //draw # of lives readout
  for(int i = 0; i<8; i++)
  {
  if(i<field->getLives())//draw a ball
- {BitBlt(hdcBuffer2,FIELDWIDTH-HORIZINDENT*2-LIVESWIDTH + (BALLWIDTH+4)*i,
-    FIELDHEIGHT+VERTINDENT*2,BALLWIDTH+4,BALLHEIGHT+11,hdcMem,0,0,SRCCOPY);}
+ {readout_surf->Draw(SurfaceBack,
+    FIELDWIDTH-HORIZINDENT*2-LIVESWIDTH + (BALLWIDTH+4)*i,
+    FIELDHEIGHT+VERTINDENT*2,
+    0,0,
+    BALLWIDTH+4,BALLHEIGHT+11);}
  else//draw a blank
- {BitBlt(hdcBuffer2,FIELDWIDTH-HORIZINDENT*2-LIVESWIDTH + (BALLWIDTH+4)*i,
-    FIELDHEIGHT+VERTINDENT*2,BALLWIDTH+4,BALLHEIGHT+11,hdcMem,0,60,SRCCOPY);}
+ {readout_surf->Draw(SurfaceBack,
+    FIELDWIDTH-HORIZINDENT*2-LIVESWIDTH + (BALLWIDTH+4)*i,
+    FIELDHEIGHT+VERTINDENT*2,
+    0,60,
+    BALLWIDTH+4,BALLHEIGHT+11);}
  }
  
   //the has a key? readout
  if(field!=NULL)
- {if(field->getHasSmallKey())
-  {BitBlt(hdcBuffer2,(FIELDWIDTH-HASKEYWIDTH)/2,FIELDHEIGHT+VERTINDENT*2,
-                          HASKEYWIDTH,HASKEYHEIGHT,hdcMem,0,29,SRCCOPY);}
-  else
-  {BitBlt(hdcBuffer2,(FIELDWIDTH-HASKEYWIDTH)/2,FIELDHEIGHT+VERTINDENT*2,
-                             HASKEYWIDTH,HASKEYHEIGHT,hdcMem,0,57,SRCCOPY);}
+ {
+    if(field->getHasSmallKey())
+    {readout_surf->Draw(SurfaceBack,(FIELDWIDTH-HASKEYWIDTH)/2,
+                                     FIELDHEIGHT+VERTINDENT*2,
+                                     0,29,HASKEYWIDTH,HASKEYHEIGHT);}
+    else
+    {readout_surf->Draw(SurfaceBack,(FIELDWIDTH-HASKEYWIDTH)/2,
+                                     FIELDHEIGHT+VERTINDENT*2,
+                                     0,57,HASKEYWIDTH,HASKEYHEIGHT);}
  }
  else
- {BitBlt(hdcBuffer2,(FIELDWIDTH-HASKEYWIDTH)/2,FIELDHEIGHT+VERTINDENT*2,
-                             HASKEYWIDTH,HASKEYHEIGHT,hdcMem,0,57,SRCCOPY);}
+ {readout_surf->Draw(SurfaceBack,(FIELDWIDTH-HASKEYWIDTH)/2,
+                                  FIELDHEIGHT+VERTINDENT*2,
+                                  0,57,HASKEYWIDTH,HASKEYHEIGHT);}
  
  //the level # readout
  int levelTens = field->getCurrentLevel()/10;
  int levelOnes = field->getCurrentLevel()%10;
- BitBlt(hdcBuffer2,NUMWIDTH*9,FIELDHEIGHT+VERTINDENT*2,
-                NUMWIDTH,NUMHEIGHT, hdcMem,0,88+levelTens*NUMHEIGHT,SRCCOPY);
- BitBlt(hdcBuffer2, NUMWIDTH*10,FIELDHEIGHT+VERTINDENT*2,
-              NUMWIDTH+1,NUMHEIGHT,hdcMem,0,88+levelOnes*NUMHEIGHT,SRCCOPY);
-              //+1 to get the border
- TextOut(hdcBuffer2,NUMWIDTH*11 + 5,FIELDHEIGHT+VERTINDENT*2 + NUMHEIGHT/4,
-              field->getLevelName().c_str(),field->getLevelName().size() );
- 
+ readout_surf->Draw(SurfaceBack,NUMWIDTH*9,FIELDHEIGHT+VERTINDENT*2,
+                0,88+levelTens*NUMHEIGHT,NUMWIDTH,NUMHEIGHT);
+ readout_surf->Draw(SurfaceBack, NUMWIDTH*10,FIELDHEIGHT+VERTINDENT*2,
+              0,88+levelOnes*NUMHEIGHT,NUMWIDTH+1,NUMHEIGHT);
+                                                 //+1 to get the border
+
  //the score readout
  int number;//the score to print
  if(field!=NULL)
@@ -761,61 +624,51 @@ void DrawScreen(Field *field, Ball *ball)//to draw the screen while a game
  int hund = (number % 1000) / 100;
  int ten = (number % 100) / 10;
  int one = number % 10;
- BitBlt(hdcBuffer2,NUMWIDTH,FIELDHEIGHT+VERTINDENT*2,
-                 NUMWIDTH,NUMHEIGHT,hdcMem,0,88+hundThou*NUMHEIGHT,SRCCOPY);
- BitBlt(hdcBuffer2,NUMWIDTH*2,FIELDHEIGHT+VERTINDENT*2,
-                  NUMWIDTH,NUMHEIGHT,hdcMem,0,88+tenThou*NUMHEIGHT,SRCCOPY);
- BitBlt(hdcBuffer2,NUMWIDTH*3,FIELDHEIGHT+VERTINDENT*2,
-                     NUMWIDTH,NUMHEIGHT,hdcMem,0,88+thou*NUMHEIGHT,SRCCOPY);
- BitBlt(hdcBuffer2,NUMWIDTH*4,FIELDHEIGHT+VERTINDENT*2,
-                     NUMWIDTH,NUMHEIGHT,hdcMem,0,88+hund*NUMHEIGHT,SRCCOPY);
- BitBlt(hdcBuffer2,NUMWIDTH*5,FIELDHEIGHT+VERTINDENT*2,
-                      NUMWIDTH,NUMHEIGHT,hdcMem,0,88+ten*NUMHEIGHT,SRCCOPY);
- BitBlt(hdcBuffer2,NUMWIDTH*6,FIELDHEIGHT+VERTINDENT*2,
-                    NUMWIDTH+1,NUMHEIGHT,hdcMem,0,88+one*NUMHEIGHT,SRCCOPY);
-                    //+1 to get the border
+ readout_surf->Draw(SurfaceBack,NUMWIDTH,FIELDHEIGHT+VERTINDENT*2,
+                 0,88+hundThou*NUMHEIGHT,NUMWIDTH,NUMHEIGHT);
+ readout_surf->Draw(SurfaceBack,NUMWIDTH*2,FIELDHEIGHT+VERTINDENT*2,
+                 0,88+tenThou*NUMHEIGHT,NUMWIDTH,NUMHEIGHT);
+ readout_surf->Draw(SurfaceBack,NUMWIDTH*3,FIELDHEIGHT+VERTINDENT*2,
+                 0,88+thou*NUMHEIGHT,NUMWIDTH,NUMHEIGHT);
+ readout_surf->Draw(SurfaceBack,NUMWIDTH*4,FIELDHEIGHT+VERTINDENT*2,
+                 0,88+hund*NUMHEIGHT,NUMWIDTH,NUMHEIGHT);
+ readout_surf->Draw(SurfaceBack,NUMWIDTH*5,FIELDHEIGHT+VERTINDENT*2,
+                 0,88+ten*NUMHEIGHT,NUMWIDTH,NUMHEIGHT);
+ readout_surf->Draw(SurfaceBack,NUMWIDTH*6,FIELDHEIGHT+VERTINDENT*2,
+                 0,88+one*NUMHEIGHT,NUMWIDTH+1,NUMHEIGHT);
+                                                   //+1 to get the border
  
  //time bonus
  //first row, lit-up
  for(int i = 0; i<23 && i<field->getTimeBonus(); i++)
- {BitBlt(hdcBuffer2,READOUTSWIDTH*.546+BONUSLIGHTWIDTH*i,
+ {readout_surf->Draw(SurfaceBack,READOUTSWIDTH*.546+BONUSLIGHTWIDTH*i,
                     FIELDHEIGHT+VERTINDENT*2 + 3,
-                    BONUSLIGHTWIDTH,BONUSLIGHTHEIGHT,hdcMem,0,348,SRCCOPY);}
+                    0,348,
+                    BONUSLIGHTWIDTH,BONUSLIGHTHEIGHT);}
  //first row, turned-off
  for(int i = field->getTimeBonus(); i<23; i++)
- {BitBlt(hdcBuffer2,READOUTSWIDTH*.546+BONUSLIGHTWIDTH*i,
+ {readout_surf->Draw(SurfaceBack,READOUTSWIDTH*.546+BONUSLIGHTWIDTH*i,
                     FIELDHEIGHT+VERTINDENT*2 + 3,
-                    BONUSLIGHTWIDTH,BONUSLIGHTHEIGHT,hdcMem,0,360,SRCCOPY);}
+                    0,360,
+                    BONUSLIGHTWIDTH,BONUSLIGHTHEIGHT);}
  //second row, lit-up
  for(int i = 0; i<23 && i<(field->getTimeBonus()-23); i++)
- {BitBlt(hdcBuffer2,READOUTSWIDTH*.546+BONUSLIGHTWIDTH*i,
+ {readout_surf->Draw(SurfaceBack,READOUTSWIDTH*.546+BONUSLIGHTWIDTH*i,
                     FIELDHEIGHT+VERTINDENT*2+BONUSLIGHTHEIGHT + 3,
-                    BONUSLIGHTWIDTH,BONUSLIGHTHEIGHT,hdcMem,0,348,SRCCOPY);}
+                    0,348,
+                    BONUSLIGHTWIDTH,BONUSLIGHTHEIGHT);}
  //second row, turned-off
  int j = field->getTimeBonus() - 23;
  if(j<0){j=0;}
  for( j; j < 23; j++)
- {BitBlt(hdcBuffer2,READOUTSWIDTH*.546+BONUSLIGHTWIDTH*j,
+ {readout_surf->Draw(SurfaceBack,READOUTSWIDTH*.546+BONUSLIGHTWIDTH*j,
                     FIELDHEIGHT+VERTINDENT*2+BONUSLIGHTHEIGHT + 3,
-                    BONUSLIGHTWIDTH,BONUSLIGHTHEIGHT,hdcMem,0,360,SRCCOPY);}
- 
-
- //copying final product to primary screen buffer from secondary
- if(field!=NULL || ball!=NULL)
- {
- BitBlt(hdc, HORIZINDENT, VERTINDENT,
-         FIELDWIDTH, FIELDHEIGHT+READOUTSHEIGHT, hdcBuffer2, 0, 0, SRCCOPY);
- }
+                    0,360,
+                    BONUSLIGHTWIDTH,BONUSLIGHTHEIGHT);}
 
 
- //restoring original bitmaps, cleaning up
- SelectObject(hdcMem, hbmOld);
- SelectObject(hdcBuffer2,hbmOld2);
- SelectObject(hdcBuffer2, hbrushOld);
- DeleteObject(tempBitmap);
- 
+ Flip();
  ValidateRect(myHandle,NULL);
-
 }//end DrawScreen()/////////////////////////////////////////////////////////
 
 
@@ -825,24 +678,19 @@ void DrawScreen(Field *field, Ball *ball)//to draw the screen while a game
 void DrawMainMenu(HiScore *score)//draws main game menu when no game in play
 {
 //BitBlt(to DC,to X,to Y,image width,height,from DC,from X,from Y,flags);
-
+ 
+ PAINTSTRUCT ps;
+ HDC hdc = BeginPaint(myHandle, &ps);//screen(visible) HDC
+ HDC hdcMem = CreateCompatibleDC(hdc);//couterpart HDC in memory
+ HDC hdcBuffer2 = CreateCompatibleDC(hdc);//secondary buffer HDC
  
  //screen sized bitmap for 2nd buffer
  HBITMAP tempBitmap = CreateCompatibleBitmap(hdc, FIELDWIDTH,
                                          FIELDHEIGHT + READOUTSHEIGHT);
  //catch old bitmap from secondary buffer as our screen sized one goes in
  HBITMAP hbmOld2 =(HBITMAP) SelectObject(hdcBuffer2, tempBitmap);
-
- //catch old bitmap as our logo bitmap goes into memory DC
- HBITMAP hbmOld = (HBITMAP)SelectObject(hdcMem, logo_bmp);
- int toDrawAtX;
- toDrawAtX = 175+HORIZINDENT;
-
- BitBlt(hdcBuffer2,toDrawAtX,43,414,89,hdcMem,0,0,SRCCOPY);
  
- SetBkMode(hdcBuffer2, TRANSPARENT);//make text transparent
- 
-  //drawing screen border
+ //drawing screen border
  HPEN redPen = CreatePen(PS_SOLID,0,RGB(255,0,0));
  HPEN greenPen = CreatePen(PS_SOLID,0,RGB(0,255,0));
  HPEN bluePen = CreatePen(PS_SOLID,0,RGB(0,0,255));
@@ -870,7 +718,15 @@ void DrawMainMenu(HiScore *score)//draws main game menu when no game in play
  LineTo(hdcBuffer2,FIELDWIDTH-30,FIELDHEIGHT+READOUTSHEIGHT-30);
  LineTo(hdcBuffer2,30,FIELDHEIGHT+READOUTSHEIGHT-30);
  LineTo(hdcBuffer2,30,30);
+
+ //catch old bitmap as our logo bitmap goes into memory DC
+ HBITMAP hbmOld = (HBITMAP)SelectObject(hdcMem, logo_bmp);
+ int toDrawAtX;
+ toDrawAtX = 175+HORIZINDENT;
  
+ BitBlt(hdcBuffer2,toDrawAtX,43,414,89,hdcMem,0,0,SRCCOPY);
+ 
+ SetBkMode(hdcBuffer2, TRANSPARENT);//make text transparent
  
  //array of COLORREF's to draw high scores
  COLORREF colors[10] = { RGB(216,47,0),//dark red
@@ -927,11 +783,6 @@ void DrawMainMenu(HiScore *score)//draws main game menu when no game in play
             tempstr.c_str(),tempstr.size());
  }
  
-
- 
- //catch old bitmap as our 'blocks bitmap goes into memory DC
- //HBITMAP hbmOld = (HBITMAP)SelectObject(hdcMem, blocks_bmp);
-
  //copying final product to primary screen buffer from secondary
  BitBlt(hdc, HORIZINDENT, VERTINDENT,
          FIELDWIDTH, FIELDHEIGHT+READOUTSHEIGHT, hdcBuffer2, 0, 0, SRCCOPY);
@@ -945,9 +796,10 @@ void DrawMainMenu(HiScore *score)//draws main game menu when no game in play
  DeleteObject(greenPen);
  DeleteObject(bluePen);
  DeleteObject(redPen);
- DeleteObject(tempBitmap);
+ DeleteDC(hdcMem);//give back memory DC
+ DeleteDC(hdcBuffer2);//give back 2nd buffer DC
+ EndPaint(myHandle, &ps);//give back screen DC
 
- ValidateRect(myHandle,NULL);
 }//end DrawMainMenu()////////////////////////////////////////////////////////
 
 
@@ -960,6 +812,9 @@ void RackUpTimeBonus()
 {
 //BitBlt(to DC,to X,to Y,image width,height,from DC,from X,from Y,flags);
 
+ PAINTSTRUCT ps;
+ HDC hdc = BeginPaint(myHandle, &ps);//screen(visible) HDC
+ HDC hdcMem = CreateCompatibleDC(hdc);//couterpart HDC in memory
  //catch old bitmap as the one for the readouts goes into memory
  HBITMAP hbmOld = (HBITMAP)SelectObject(hdcMem, readout_bmp);
 
@@ -1033,19 +888,13 @@ void RackUpTimeBonus()
                         //5000pts and less than max. lives
        {
         field->incLives();
-
                 if(sound)
-                {PlaySound(MAKEINTRESOURCE(ONEUPSND),
-                                 hinst1,SND_RESOURCE|SND_ASYNC);}
-
+                {oneup_snd->Play();}
        }
      else
      {
-
       if(sound)
-      {PlaySound(MAKEINTRESOURCE(TIMEBONUSSND),
-                          hinst1,SND_RESOURCE|SND_ASYNC);}
-
+      {timebonus_snd->Play();}
      }
       
       Sleep(120 + (count%2)*50);//wait another 50ms every other time
@@ -1053,5 +902,228 @@ void RackUpTimeBonus()
 
 //restoring original bitmaps, cleaning up
  SelectObject(hdcMem, hbmOld);
+ DeleteDC(hdcMem);//give back memory DC
+ EndPaint(myHandle, &ps);//give back screen DC
 
 }//end RackUpTimeBonus()/////////////////////////////////////////////////////
+
+
+/*InitDirectDRAW************************************************************/
+// credit for this function goes to Mauricio Ritter
+// http://www.codeproject.com/directx/BasicDD/
+int InitDirectDraw()
+{
+   DDSURFACEDESC  ddsd;
+   DDSCAPS        ddscaps;
+   HRESULT        hRet;
+
+   // Create the main DirectDraw object.
+   hRet = DirectDrawCreate(NULL,&DirDrawObj,NULL);
+   if( hRet != DD_OK )
+       return -1;
+
+   // Get exclusive mode.
+   hRet = DirDrawObj->SetCooperativeLevel(myHandle, 
+        DDSCL_NORMAL);
+   //DDSCL_ALLOWMODEX|DDSCL_FULLSCREEN|DDSCL_EXCLUSIVE|DDSCL_ALLOWREBOOT);
+   if( hRet != DD_OK )
+       return -2;
+
+   /*// Set the video mode
+   hRet = DirDrawObj->SetDisplayMode(1024, 768, 16);
+   if( hRet != DD_OK )
+       return -3;*/
+
+   // Prepare to create the primary surface by initializing
+   // the fields of a DDSURFACEDESC structure.
+   memset(&ddsd,0,sizeof(ddsd));
+   ddsd.dwSize = sizeof(ddsd);
+   ddsd.dwFlags = DDSD_CAPS;// | DDSD_BACKBUFFERCOUNT;
+   ddsd.ddsCaps.dwCaps = 
+        DDSCAPS_PRIMARYSURFACE;// | DDSCAPS_FLIP | DDSCAPS_COMPLEX;
+   // ddsd.dwBackBufferCount = 1;
+
+   // Create the primary surface.
+   hRet = DirDrawObj->CreateSurface(&ddsd, &SurfaceFront, NULL);
+   if( hRet != DD_OK )
+       return -4;
+
+   /*// Get a pointer to the back buffer.
+   ZeroMemory(&ddscaps, sizeof(ddscaps));
+   ddscaps.dwCaps = DDSCAPS_BACKBUFFER;
+   hRet = SurfaceFront->GetAttachedSurface(&ddscaps, &SurfaceBack);
+   if( hRet != DD_OK )
+       return -5;*/
+       
+   // Create a clipper to ensure that our drawing stays inside our window
+    hRet = DirDrawObj->CreateClipper( 0, &clipper, NULL );
+    if( hRet != DD_OK )
+    return - 6;
+
+    // setting it to our hwnd gives the clipper the coords. from our window
+    hRet = clipper->SetHWnd( 0, myHandle );
+    if( hRet != DD_OK )
+    return -7;
+
+
+
+    // attach the clipper to the primary surface
+    hRet = SurfaceFront->SetClipper( clipper );
+    if( hRet != DD_OK )
+
+
+    // create the backbuffer separately
+    memset( &ddsd, 0, sizeof(ddsd) );
+    ddsd.dwSize = sizeof( ddsd );
+    ddsd.dwFlags = DDSD_CAPS | DDSD_HEIGHT | DDSD_WIDTH;
+    ddsd.ddsCaps.dwCaps = DDSCAPS_OFFSCREENPLAIN;
+    ddsd.dwWidth = FIELDWIDTH;
+    ddsd.dwHeight = FIELDHEIGHT + READOUTSHEIGHT;
+
+    hRet = DirDrawObj->CreateSurface( &ddsd, &SurfaceBack, NULL );
+    if( hRet != DD_OK )
+    return -7;
+   
+   //create the bitmaps       
+   //                                      width, height, transparent color)
+   ball_surf    = new Surface( DirDrawObj,    18,    145,     RGB(0,0,0) );
+   blocks_surf  = new Surface( DirDrawObj,    66,    720);
+   readout_surf = new Surface( DirDrawObj,    45,    372);
+   bkgrnd_surf  = new Surface( DirDrawObj,   792,    480);
+   
+   ball_surf->LoadBitmap   (hinst1, BALL_BMP, 0, 0);
+   blocks_surf->LoadBitmap (hinst1, BLOCKS_BMP, 0, 0);
+   readout_surf->LoadBitmap(hinst1, READOUT_BMP, 0, 0);
+   bkgrnd_surf->LoadBitmap( hinst1, BACKGROUND_BMP, 0, 0);
+
+   return 0;
+
+}//end InitDirectDraw()//////////////////////////////////////////////////////
+
+
+
+
+/*CleanUpDirDRAW************************************************************/
+// credit for this function goes to Mauricio Ritter
+// http://www.codeproject.com/directx/BasicDD/
+void CleanUpDirDraw()
+{
+    delete ball_surf;
+    delete blocks_surf;
+    delete readout_surf;
+    delete bkgrnd_surf;
+    
+    if(clipper)
+        clipper-> Release();
+    
+    if(SurfaceBack)
+        SurfaceBack->Release();
+
+    if(SurfaceFront)
+        SurfaceFront->Release();
+
+    if(DirDrawObj)
+        DirDrawObj->Release();
+     
+}//end CleanUpDirDraw()//////////////////////////////////////////////////////
+
+/*FLIP**********************************************************************/
+bool Flip()
+{
+//credit for this function goes to Lan Mader
+//http://www.gamedev.net/reference/articles/article608.asp
+    HRESULT hRet;
+    RECT rcRectSrc;
+    RECT rcRectDest;
+    POINT p;
+
+    //first we need to figure out where on the primary surface our window is
+    p.x = 0; p.y = 0;
+    ClientToScreen(myHandle, &p);
+    GetClientRect(myHandle, &rcRectDest);
+    OffsetRect(&rcRectDest, p.x + HORIZINDENT, p.y + VERTINDENT);
+    rcRectDest.right = rcRectDest.left + FIELDWIDTH;
+    rcRectDest.bottom = rcRectDest.top + FIELDHEIGHT + READOUTSHEIGHT;
+    
+    SetRect(&rcRectSrc, 0, 0, FIELDWIDTH, FIELDHEIGHT + READOUTSHEIGHT);
+
+    while(1)
+    {
+
+        hRet = SurfaceFront->Blt(&rcRectDest, SurfaceBack, &rcRectSrc, 
+                                   DDBLT_WAIT,  NULL);
+
+        if(hRet == DD_OK)
+            break;
+
+        if(hRet == DDERR_SURFACELOST)
+        {
+            SurfaceFront->Restore();
+        }
+        else
+        {
+            if(hRet != DDERR_WASSTILLDRAWING)
+                return FALSE;
+        }
+    }
+
+}//end Flip()////////////////////////////////////////////////////////////////
+
+
+/*InitDirectSOUND***********************************************************/
+int InitDirectSound()
+{
+    HRESULT hRet;//to check for errors
+    
+    //create object
+    hRet = DirectSoundCreate(NULL, &DirSoundObj, NULL);
+    if(hRet != DS_OK)
+    {return -1;}
+    
+    //set coop level
+    hRet = DirSoundObj->SetCooperativeLevel(myHandle, DSSCL_NORMAL);
+    if(hRet != DS_OK)
+    {return -2;}
+    
+    // load all sounds
+    bounce_snd = new SoundBuffer(DirSoundObj, MAKEINTRESOURCE(BOUNCESND));
+    colorblk_snd = new SoundBuffer(DirSoundObj,MAKEINTRESOURCE(COLORBLKSND));
+    colorkey_snd = new SoundBuffer(DirSoundObj,MAKEINTRESOURCE(COLORKEYSND));
+    diamond_snd = new SoundBuffer(DirSoundObj, MAKEINTRESOURCE(DIAMONDSND));
+    die_snd = new SoundBuffer(DirSoundObj, MAKEINTRESOURCE(DIESND));
+    laughing_snd = new SoundBuffer(DirSoundObj,MAKEINTRESOURCE(LAUGHINGSND));
+    levelwon_snd = new SoundBuffer(DirSoundObj,MAKEINTRESOURCE(LEVELWONSND));
+    lock_snd = new SoundBuffer(DirSoundObj, MAKEINTRESOURCE(LOCKSND));
+    smallkey_snd = new SoundBuffer(DirSoundObj,MAKEINTRESOURCE(SMALLKEYSND));
+    reverse_snd = new SoundBuffer(DirSoundObj, MAKEINTRESOURCE(REVERSESND));
+    timebonus_snd=new SoundBuffer(DirSoundObj,MAKEINTRESOURCE(TIMEBONUSSND));
+    oneup_snd = new SoundBuffer(DirSoundObj, MAKEINTRESOURCE(ONEUPSND));
+    bounce2_snd = new SoundBuffer(DirSoundObj, MAKEINTRESOURCE(BOUNCE2SND));
+    
+    
+    return 0;
+
+}//end InitDirectSound()/////////////////////////////////////////////////////
+
+/*CleanUpDirSOUND***********************************************************/
+void CleanUpDirSound()
+{
+     delete bounce_snd;
+     delete colorblk_snd;
+     delete colorkey_snd;
+     delete diamond_snd;
+     delete die_snd;
+     delete laughing_snd;
+     delete levelwon_snd;
+     delete lock_snd;
+     delete smallkey_snd;
+     delete reverse_snd;
+     delete timebonus_snd;
+     delete oneup_snd;
+     delete bounce2_snd;
+     
+     if(DirSoundObj)
+     {DirSoundObj->Release();}
+     
+}//end CleanUpDirSound()/////////////////////////////////////////////////////
+

@@ -5,6 +5,7 @@
  
  #include "Field.h"
  #include "Ball.h"
+ #include "D2Globals.h"
 
 
 /*CONSTRUCTOR***************************************************************/
@@ -89,7 +90,7 @@ void Field::fillInBlocks(string input)
 {
  /*
   * l(ight blue), b(lue), r(ed), g(reen), (bro)w(n), p(urple) = color blocks
-  * B(lue), R(ed), G(reen), (bro)W(n), P(urple), O(range)  =color change keys
+  * B(lue), R(ed), G(reen), (bro)W(n), P(urple), O(range) = color change keys
   * d(iamond), s(kull), small (k)ey, L(ock), S(olid), (re)v(erse), n(ull)
   */
 
@@ -465,16 +466,14 @@ void Field::fillInBlocks(string input)
                 score+=100;
                 #ifdef WIN32
                 if(sound)
-                PlaySound(MAKEINTRESOURCE(DIAMONDSND),
-                   hinst1,SND_RESOURCE|SND_ASYNC);
+                diamond_snd->Play();
                 #endif
                }
                else
                {
                 #ifdef WIN32
                 if(sound)
-                PlaySound(MAKEINTRESOURCE(BOUNCE2SND),
-                   hinst1,SND_RESOURCE|SND_ASYNC);
+                bounce2_snd->Play();
                 #endif
                }
                if(diamondBlocks == 0)//if no more diamonds now
@@ -491,16 +490,14 @@ void Field::fillInBlocks(string input)
                 toReturn.change = (color)returnedInfo.info;
                 #ifdef WIN32
                 if(sound)
-                PlaySound(MAKEINTRESOURCE(COLORKEYSND),
-                   hinst1,SND_RESOURCE|SND_ASYNC);
+                colorkey_snd->Play();
                 #endif
                }
                else
                {
                 #ifdef WIN32
                 if(sound)
-                PlaySound(MAKEINTRESOURCE(BOUNCE2SND),
-                   hinst1,SND_RESOURCE|SND_ASYNC);
+                bounce2_snd->Play();
                 #endif
                }
                break;
@@ -514,16 +511,14 @@ void Field::fillInBlocks(string input)
                 score+=3;
                 #ifdef WIN32
                 if(sound)
-                PlaySound(MAKEINTRESOURCE(COLORBLKSND),
-                   hinst1,SND_RESOURCE|SND_ASYNC);
+                colorblk_snd->Play();
                 #endif
                }
                else
                {
                 #ifdef WIN32
                 if(sound)
-                PlaySound(MAKEINTRESOURCE(BOUNCE2SND),
-                   hinst1,SND_RESOURCE|SND_ASYNC);
+                bounce2_snd->Play();
                 #endif
                }
                break;
@@ -531,8 +526,7 @@ void Field::fillInBlocks(string input)
           case MSG_SOLID://hit immovable block
                 #ifdef WIN32
                 if(sound)
-                PlaySound(MAKEINTRESOURCE(BOUNCE2SND),
-                   hinst1,SND_RESOURCE|SND_ASYNC);
+                bounce2_snd->Play();
                 #endif
                break;
 
@@ -545,16 +539,14 @@ void Field::fillInBlocks(string input)
                 score+=25;
                 #ifdef WIN32
                 if(sound)
-                PlaySound(MAKEINTRESOURCE(SMALLKEYSND),
-                   hinst1,SND_RESOURCE|SND_ASYNC);
+                smallkey_snd->Play();
                 #endif
                }
                else
                {
                 #ifdef WIN32
                 if(sound)
-                PlaySound(MAKEINTRESOURCE(BOUNCE2SND),
-                   hinst1,SND_RESOURCE|SND_ASYNC);
+                bounce2_snd->Play();
                 #endif
                }
                break;
@@ -568,16 +560,14 @@ void Field::fillInBlocks(string input)
                 score+=50;
                 #ifdef WIN32
                 if(sound)
-                PlaySound(MAKEINTRESOURCE(LOCKSND),
-                   hinst1,SND_RESOURCE|SND_ASYNC);
+                lock_snd->Play();
                 #endif
                }
                else
                {
                 #ifdef WIN32
                 if(sound)
-                PlaySound(MAKEINTRESOURCE(BOUNCE2SND),
-                   hinst1,SND_RESOURCE|SND_ASYNC);
+                bounce2_snd->Play();
                 #endif
                }
                break;
@@ -591,8 +581,7 @@ void Field::fillInBlocks(string input)
                blocks[cellY][cellX] = NULL;
                 #ifdef WIN32
                 if(sound)
-                PlaySound(MAKEINTRESOURCE(REVERSESND),
-                   hinst1,SND_RESOURCE|SND_ASYNC);
+                reverse_snd->Play();
                 #endif
                break;
                 
@@ -614,7 +603,7 @@ void Field::setLevel()
 
 /*
  * l(ight blue), b(lue), r(ed), g(reen), (bro)w(n), p(urple) =  color blocks
- * B(lue), R(ed), G(reen), (bro)W(n), P(urple), O(range) = color change keys
+ * B(lue), R(ed), G(reen), (bro)W(n), P(urple), O(range) =  color change keys
  * d(iamond), s(kull), small (k)ey, L(ock), S(olid), (re)v(erse), n(ull)
  */
   
@@ -1234,12 +1223,11 @@ void Field::moveBall()
      if(previousScore / 5000 < score/5000 && lives < 8 )
                         //5000pts and less than max. lives
      {
-        lives++;
-        #ifdef WIN32
-        if(sound)
-        PlaySound(MAKEINTRESOURCE(ONEUPSND),
-           hinst1,SND_RESOURCE|SND_ASYNC);
-        #endif
+      lives++;
+      #ifdef WIN32
+      if(sound)
+      oneup_snd->Play();
+      #endif
      }
 }//end moveBall()
 

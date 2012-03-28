@@ -1,7 +1,6 @@
 #ifndef _RESOURCE_DIAMONDS_H
 #define _RESOURCE_DIAMONDS_H
 
-
 #define MAINTIMER 555
 #define BONUSTIMER 556
 #define INTERVAL 20
@@ -46,9 +45,5 @@
 #define TIMEBONUSSND 6011
 #define ONEUPSND 6012
 #define BOUNCE2SND 60013
-
-
-
-
 
 #endif

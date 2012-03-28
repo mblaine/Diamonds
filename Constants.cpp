@@ -7,9 +7,7 @@ const int ARRAYHEIGHT = 12;
 const int BLOCKWIDTH = 66;//in pixels
 const int BLOCKHEIGHT = 40;
 
-const int FIELDWIDTH = ARRAYWIDTH * BLOCKWIDTH + 2 * HORIZINDENT;//in pixels
-
-
+const int FIELDWIDTH = ARRAYWIDTH * BLOCKWIDTH + 2 * HORIZINDENT; //in pixels
 const int FIELDHEIGHT = ARRAYHEIGHT * BLOCKHEIGHT + 2 * VERTINDENT;
 
 const int BALLWIDTH = 18;//in pixels

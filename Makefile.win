@@ -1,33 +1,30 @@
-# Project: Diamonds
+# Project: Diamonds2
 # Makefile created by Dev-C++ 4.9.9.2
 
 CPP  = g++.exe
 CC   = gcc.exe
 WINDRES = windres.exe
 RES  = Diamonds_private.res
-OBJ  = Diamonds.o Constants.o Ball.o HiScore.o Field.o $(RES)
-LINKOBJ  = Diamonds.o Constants.o Ball.o HiScore.o Field.o $(RES)
-LIBS =  -L"C:/Dev-Cpp/lib" -mwindows  ../../../../../../Dev-Cpp/lib/libwinmm.a  
+OBJ  = Constants.o Ball.o Field.o Diamonds2.o D2FuncDefs.o HiScore.o Surface.o SoundBuffer.o dsutil.o $(RES)
+LINKOBJ  = Constants.o Ball.o Field.o Diamonds2.o D2FuncDefs.o HiScore.o Surface.o SoundBuffer.o dsutil.o $(RES)
+LIBS =  -L"C:/Dev-Cpp/lib" -mwindows ../../../../../../Dev-Cpp/lib/libwinmm.a ../../../../../../Dev-Cpp/lib/libkernel32.a ../../../../../../Dev-Cpp/lib/libuser32.a ../../../../../../Dev-Cpp/lib/libddraw.a ../../../../../../Dev-Cpp/lib/libgdi32.a ../../../../../../Dev-Cpp/lib/libdxguid.a ../../../../../../Dev-Cpp/lib/libdsound.a  
 INCS =  -I"C:/Dev-Cpp/include" 
 CXXINCS =  -I"C:/Dev-Cpp/lib/gcc/mingw32/3.4.2/include"  -I"C:/Dev-Cpp/include/c++/3.4.2/backward"  -I"C:/Dev-Cpp/include/c++/3.4.2/mingw32"  -I"C:/Dev-Cpp/include/c++/3.4.2"  -I"C:/Dev-Cpp/include" 
-BIN  = Diamonds.exe
+BIN  = Diamonds2.exe
 CXXFLAGS = $(CXXINCS)   -w -fexpensive-optimizations -O3
 CFLAGS = $(INCS)   -w -fexpensive-optimizations -O3
 RM = rm -f
 
 .PHONY: all all-before all-after clean clean-custom
 
-all: all-before Diamonds.exe all-after
+all: all-before Diamonds2.exe all-after
 
 
 clean: clean-custom
 	${RM} $(OBJ) $(BIN)
 
 $(BIN): $(OBJ)
-	$(CPP) $(LINKOBJ) -o "Diamonds.exe" $(LIBS)
-
-Diamonds.o: Diamonds.cpp
-	$(CPP) -c Diamonds.cpp -o Diamonds.o $(CXXFLAGS)
+	$(CPP) $(LINKOBJ) -o "Diamonds2.exe" $(LIBS)
 
 Constants.o: Constants.cpp
 	$(CPP) -c Constants.cpp -o Constants.o $(CXXFLAGS)
@@ -35,11 +32,26 @@ Constants.o: Constants.cpp
 Ball.o: Ball.cpp
 	$(CPP) -c Ball.cpp -o Ball.o $(CXXFLAGS)
 
+Field.o: Field.cpp
+	$(CPP) -c Field.cpp -o Field.o $(CXXFLAGS)
+
+Diamonds2.o: Diamonds2.cpp
+	$(CPP) -c Diamonds2.cpp -o Diamonds2.o $(CXXFLAGS)
+
+D2FuncDefs.o: D2FuncDefs.cpp
+	$(CPP) -c D2FuncDefs.cpp -o D2FuncDefs.o $(CXXFLAGS)
+
 HiScore.o: HiScore.cpp
 	$(CPP) -c HiScore.cpp -o HiScore.o $(CXXFLAGS)
 
-Field.o: Field.cpp
-	$(CPP) -c Field.cpp -o Field.o $(CXXFLAGS)
+Surface.o: Surface.cpp
+	$(CPP) -c Surface.cpp -o Surface.o $(CXXFLAGS)
+
+SoundBuffer.o: SoundBuffer.cpp
+	$(CPP) -c SoundBuffer.cpp -o SoundBuffer.o $(CXXFLAGS)
+
+dsutil.o: dsutil.cpp
+	$(CPP) -c dsutil.cpp -o dsutil.o $(CXXFLAGS)
 
 Diamonds_private.res: Diamonds_private.rc Resource_Diamonds.rc 
 	$(WINDRES) -i Diamonds_private.rc --input-format=rc -o Diamonds_private.res -O coff 

@@ -12,14 +12,13 @@
 
 
 //handle to the instance of the main program, necessary for making sounds
-//defined in 'Diamonds.cpp'
+//defined in 'Diamonds2.cpp'
 #ifdef WIN32
 #include <windows.h>
 #include <mmsystem.h>
 extern HINSTANCE hinst1;
 extern bool sound;//if sound is on/off
 #endif
-
 
 extern const int ARRAYWIDTH;
 extern const int ARRAYHEIGHT;
@@ -43,6 +42,7 @@ extern const int YGOUP;
 extern const int YGODOWN;
 
 //messages sent inf BlockToField structure
+//can't be const variables b/c I use them as cases in a switch statement
 #define MSG_DIAMOND 10
 #define MSG_COLORCHANGEKEY 11
 #define MSG_SMALLKEY 12
@@ -88,24 +88,24 @@ enum color { nullColor, ltBlue, blue, red, green, brown, purple, orange};
 //sent from ball to field object
 struct BallToField
 {
- int x;//ball's x position
- int y;//y coord
- color c;//current color
+ int x;   //ball's x position
+ int y;   //y coord
+ color c; //current color
 };
 
 //sent from field to ball object
 struct FieldToBall
 {
- int yMoveInfo;//if ball should reverse it's vertical motion
- int xMoveInfo;//tells whether should move horizontally or not
- color change;//color to change to, zero if no change
+ int yMoveInfo;   //if ball should reverse it's vertical motion
+ int xMoveInfo;   //tells whether should move horizontally or not
+ color change;    //color to change to, zero if no change
 };
 
 //sent from block to field object
 struct BlockToField
 {
- int msg;//message, depends on block subclass sending this struct
- int info;//added info, if needed
+ int msg;   //message, depends on block subclass sending this struct
+ int info;  //added info, if needed
 };
 
 #endif

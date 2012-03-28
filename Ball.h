@@ -22,7 +22,6 @@ class Field;
 class Ball
 {
  private:
- 
  //coord's of ball's top, left-hand corner
  int xpos, ypos;
  
@@ -47,7 +46,7 @@ class Ball
  
  //pointer to play field object
  Field *field;
- 
+
  //if x-position is moving due to a bounce and not a key-press
  //  (will move twice as far)
  bool xBounce;

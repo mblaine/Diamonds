@@ -5,14 +5,14 @@
 #define DIAMONDS_PRIVATE_H
 
 /* VERSION DEFINITIONS */
-#define VER_STRING	"1.0.0.0"
-#define VER_MAJOR	1
+#define VER_STRING	"2.0.0.0"
+#define VER_MAJOR	2
 #define VER_MINOR	0
 #define VER_RELEASE	0
 #define VER_BUILD	0
 #define COMPANY_NAME	"M.J.B."
 #define FILE_VERSION	""
-#define FILE_DESCRIPTION	"Diamonds"
+#define FILE_DESCRIPTION	"Diamonds v2"
 #define INTERNAL_NAME	""
 #define LEGAL_COPYRIGHT	""
 #define LEGAL_TRADEMARKS	""

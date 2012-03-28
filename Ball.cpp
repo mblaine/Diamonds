@@ -5,7 +5,7 @@
  
  #include "Ball.h"
  #include "Field.h"
- 
+ #include "D2Globals.h"
 
 /*CONTRUCTOR****************************************************************/
  Ball::Ball( int x, int y, int delta, Field *ptr)
@@ -111,7 +111,7 @@
          setDYdown();
          #ifdef WIN32
          if(sound)
-         PlaySound(MAKEINTRESOURCE(BOUNCESND),hinst1,SND_RESOURCE|SND_ASYNC);
+         bounce_snd->Play();
          #endif
       }
       else if( (ypos+BALLHEIGHT)>=FIELDHEIGHT-VERTINDENT*2 )
@@ -119,23 +119,23 @@
          setDYup();
          #ifdef WIN32
          if(sound)
-         PlaySound(MAKEINTRESOURCE(BOUNCESND),hinst1,SND_RESOURCE|SND_ASYNC);
-         #endif      
+         bounce_snd->Play();
+         #endif
       }
       if( xpos<=0 )
       {
          moveRightOnce(); xBounce = true;
          #ifdef WIN32
          if(sound)
-         PlaySound(MAKEINTRESOURCE(BOUNCESND),hinst1,SND_RESOURCE|SND_ASYNC);
+         bounce_snd->Play();
          #endif
       }
-      else if( (xpos+BALLWIDTH) >= FIELDWIDTH-HORIZINDENT*2 )
+      else if( (xpos+BALLWIDTH) >= FIELDWIDTH -HORIZINDENT*2 )
       {
          moveLeftOnce(); xBounce = true;
          #ifdef WIN32
          if(sound)
-         PlaySound(MAKEINTRESOURCE(BOUNCESND),hinst1,SND_RESOURCE|SND_ASYNC);
+         bounce_snd->Play();
          #endif
       }
       

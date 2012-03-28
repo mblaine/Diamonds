@@ -67,7 +67,7 @@ CAPTION "About Diamonds"
 FONT 8, "MS Sans Serif"
 BEGIN
     DEFPUSHBUTTON   "&OK",IDOK,140,20,50,14
-    GROUPBOX        "Diamonds 1.0",0,3,3,194,44
+    GROUPBOX        "Diamonds 2.0",0,3,3,194,44
     CTEXT           "Created November 2005\r\nby Matt Blaine", 0,16,20,110,20
 END
 
