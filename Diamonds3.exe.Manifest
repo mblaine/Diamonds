@@ -3,11 +3,11 @@
   xmlns="urn:schemas-microsoft-com:asm.v1"
   manifestVersion="1.0">
 <assemblyIdentity
-    name="DevCpp.Apps.Diamonds2"
+    name="DevCpp.Apps.Diamonds3"
     processorArchitecture="x86"
     version="1.0.0.0"
     type="win32"/>
-<description>Diamonds2</description>
+<description>Diamonds3</description>
 <dependency>
     <dependentAssembly>
         <assemblyIdentity

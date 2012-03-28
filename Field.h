@@ -3,11 +3,9 @@
  * created by Matthew Blaine, October 2005
  *
  * This class represents an entire playing field in a game of 'Diamonds'. It
- * contains a 2D array of 'Block' base class pointers. The 'ball' object
- * call the field's checkCollision() function, causing the field to call a
- * block's collision() function through the base class pointer, if the
- * pointer does not equal NULL. The field then causes the blocks and ball to
- * react accordingly.
+ * contains a 2D array of 'Block' enum constant values. The 'ball' object
+ * calls the field's checkCollision() function. The field then causes the
+ * blocks and ball to react accordingly.
  */
  
 #ifndef _FIELD_H
@@ -16,7 +14,6 @@
 #include <cstdlib>
 #include <string>
 #include "Constants.h"
-#include "Block.h"
 #include "Resource_Diamonds.h"
 using namespace std;
 class Ball;
@@ -25,20 +22,20 @@ class Field
 {
  private:
          
- //pointers to block objects
- //           [y] [x]
- Block* blocks[12][12];
+ //pointers to Block constants
+ //          [y] [x]
+ Block blocks[12][12];
 
  //keeps track of whether level won or lost
  int gameState;
  
- //whether player has picked up a small key block
- bool hasSmallKey;
+ //whether player has picked up a key block
+ bool hasKey;
  
  //whether horizontal motion has been reversed
  bool horizReversed;
  
- //the point score for the level this field represents
+ //the point score for the game this field represents
  int score;
  
  //level this playing field is on
@@ -85,7 +82,7 @@ class Field
  inline Ball* getBallPtr() {return ball;}
  
  //get method for the Block pointer array
- Block* getBlock(int y, int x);
+ Block getBlock(int y, int x);
  
  //get 'lives'
  inline int getLives(){return lives;}
@@ -112,10 +109,10 @@ class Field
  
  //get horizReversed
  inline bool getHorizReversed(){return horizReversed;}
- //get hasSmallKey
- inline bool getHasSmallKey(){return hasSmallKey;}
+ //get hasKey
+ inline bool getHasKey(){return hasKey;}
  
- //get name of current level (public get method for member variable)
+ //get name of current level
  inline string getLevelName(){return levelName;}
  
  //get score

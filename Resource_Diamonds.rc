@@ -10,21 +10,22 @@ BACKGROUND_BMP BITMAP DISCARDABLE  "..\\media\\background.bmp"
 
 
 //sounds
+BOUNCESND     WAVE DISCARDABLE "..\\media\\bounce.wav"
+COLORBLKSND   WAVE DISCARDABLE "..\\media\\colorblock.wav"
+COLORBRUSHSND WAVE DISCARDABLE "..\\media\\colorchange.wav"
+DIAMONDSND    WAVE DISCARDABLE "..\\media\\diamondsound.wav"
+DIESND        WAVE DISCARDABLE "..\\media\\die.wav"
+LAUGHINGSND   WAVE DISCARDABLE "..\\media\\laughing.wav"
+LEVELWONSND   WAVE DISCARDABLE "..\\media\\levelwon.wav"
+LOCKSND       WAVE DISCARDABLE "..\\media\\lock.wav"
+KEYSND        WAVE DISCARDABLE "..\\media\\smallkey.wav"
+REVERSESND    WAVE DISCARDABLE "..\\media\\reverse.wav"
+TIMEBONUSSND  WAVE DISCARDABLE "..\\media\\timebonus.wav"
+ONEUPSND      WAVE DISCARDABLE "..\\media\\oneup.wav"
+BOUNCE2SND    WAVE DISCARDABLE "..\\media\\bounce2.wav"
 
-BOUNCESND    WAVE DISCARDABLE "..\\media\\bounce.wav"
-COLORBLKSND  WAVE DISCARDABLE "..\\media\\colorblock.wav"
-COLORKEYSND  WAVE DISCARDABLE "..\\media\\colorchange.wav"
-DIAMONDSND   WAVE DISCARDABLE "..\\media\\diamondsound.wav"
-DIESND       WAVE DISCARDABLE "..\\media\\die.wav"
-LAUGHINGSND  WAVE DISCARDABLE "..\\media\\laughing.wav"
-LEVELWONSND  WAVE DISCARDABLE "..\\media\\levelwon.wav"
-LOCKSND      WAVE DISCARDABLE "..\\media\\lock.wav"
-SMALLKEYSND  WAVE DISCARDABLE "..\\media\\smallkey.wav"
-REVERSESND   WAVE DISCARDABLE "..\\media\\reverse.wav"
-TIMEBONUSSND WAVE DISCARDABLE "..\\media\\timebonus.wav"
-ONEUPSND     WAVE DISCARDABLE "..\\media\\oneup.wav"
-BOUNCE2SND   WAVE DISCARDABLE "..\\media\\bounce2.wav"
-
+//font
+FONT_DIAMONDS FONT DISCARDABLE "..\\media\\Diamonds.ttf"
 
 //program icon
 PROG_ICON  ICON    DISCARDABLE      "..\\media\\Diamond.ico"
@@ -55,20 +56,22 @@ EnterName DIALOG DISCARDABLE 210,100,104,90
 STYLE WS_DLGFRAME | WS_POPUP
 FONT 8, "MS Shell Dlg"
 BEGIN
-    DEFPUSHBUTTON "&OK",IDOK,35,65,33,14
-    CTEXT         "Congratulations! You got a high score! Enter your name below.",0,10,7,84,45
     EDITTEXT      NAME_INPUT,13,46,78,14,ES_AUTOHSCROLL
+    DEFPUSHBUTTON "&OK",IDOK,35,65,33,14
+    CTEXT         "Congratulations! You got a high score! Enter your name below.",0,10,7,84,30
 END
 
 //about dialog
-About DIALOG DISCARDABLE  175, 125, 200, 50
+About DIALOG DISCARDABLE  175, 125, 200, 68
 STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "About Diamonds"
 FONT 8, "MS Sans Serif"
 BEGIN
     DEFPUSHBUTTON   "&OK",IDOK,140,20,50,14
-    GROUPBOX        "Diamonds 2.0",0,3,3,194,44
+    GROUPBOX        "Diamonds 3.0",0,3,3,194,61
     CTEXT           "Created November 2005\r\nby Matt Blaine", 0,16,20,110,20
+    CTEXT           "Updated August 2006", 0,16,38,110,10
+    CTEXT           "Based on ""Diamonds"" ©1992 Varcon Systems, Inc.", 0,16,48,175,10
 END
 
 //keyboard accelerators

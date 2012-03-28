@@ -1,30 +1,32 @@
 /*
- * DIAMONDS2.CPP
+ * DIAMONDS3.CPP
  * created by Matthew Blaine, November 2005
+ * updated by Matthew Blaine, August 2006
  *
- * Diamonds that runs on DirectX.
+ * Diamonds that runs on DirectX and contains a total of 70 levels.
  *
- * This WIN32 application uses classes 'Ball', 'Field', and 'Block' and its
- * subclasses to orchestrate a full-blown, 30-level game of 'Diamonds'. To
- * play Diamonds, the player uses the left and right arrow keys to direct a
- * constantly bouncing up-and-down ball through the playing field. To beat a
- * a level, destroy all the Diamond blocks, derived from the base class
+ * This WIN32 application uses classes 'Ball' and 'Field', and enum 'Block'
+ * to orchestrate a full-blown, 70-level game of 'Diamonds'. To play
+ * Diamonds, the player uses the left and right arrow keys to direct a
+ * constantly bouncing up-and-down ball through the playing field. To beat
+ * a level, destroy all the Diamond blocks, defined in the enumeration
  * 'Block'. To desroy a bock, simply cause the ball to make contact with it.
  * Diamond blocks cannot be destroyed until all color-blocks are destroyed.
  * These can only be destroyed if the ball matches the given block's color.
- * To change the ball's color, run into a 'key' block. There is no key block
+ * To change the ball's color, run into a brush block. There is no block
  * to make the ball light blue, so remove those blocks first. If you hit a
- * key block, changing the ball's color, before all light blue blocks are
+ * brush block, changing the ball's color, before all light blue blocks are
  * gone, you must run the ball into a 'skull' block, losing a life and
  * reseting the ball.
  *
  */
 
-#define  DIAMONDS_V2
+#define _WIN32_WINNT 0x0500
+#define WINVER       0x0500
 
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
-#include <windowsx.h>
+#include <commctrl.h>
 #include <mmsystem.h>
 #include <ddraw.h>
 #include <dsound.h>
@@ -32,10 +34,9 @@
 #include "Constants.h"
 #include "Field.h"
 #include "Ball.h"
-#include "Block.h"
 #include "Resource_Diamonds.h"
 #include "HiScore.h"
-#include "D2Globals.h"
+#include "D3Globals.h"
 #include "Surface.h"
 
 #define CLASSNAME "MJB_Diamonds"
@@ -45,6 +46,7 @@ HWND myHandle = NULL;
 HINSTANCE hinst1 = NULL;
 HACCEL hmyaccel = NULL;
 HMENU hmenu = NULL;
+HANDLE fontResource = NULL;
 
 //handles to bitmaps
 HBITMAP readout_bmp = NULL;
@@ -60,13 +62,13 @@ Surface* bkgrnd_surf = NULL;
 //handles to wave buffers
 SoundBuffer* bounce_snd = NULL;
 SoundBuffer* colorblk_snd = NULL;
-SoundBuffer* colorkey_snd = NULL;
+SoundBuffer* colorbrush_snd = NULL;
 SoundBuffer* diamond_snd = NULL;
 SoundBuffer* die_snd = NULL;
 SoundBuffer* laughing_snd = NULL;
 SoundBuffer* levelwon_snd = NULL;
 SoundBuffer* lock_snd = NULL;
-SoundBuffer* smallkey_snd = NULL;
+SoundBuffer* key_snd = NULL;
 SoundBuffer* reverse_snd = NULL;
 SoundBuffer* timebonus_snd = NULL;
 SoundBuffer* oneup_snd = NULL;
@@ -74,10 +76,11 @@ SoundBuffer* bounce2_snd = NULL;
 
 
 //handle to brushes for drawing screen
-HBRUSH ltGray = NULL;
 HBRUSH gray = NULL;
 HBRUSH borderBrushes[7];
 
+//handle to Diamonds font
+HFONT dfont = NULL;
 
 //if a game is running
 bool gameOn = false;
@@ -86,6 +89,8 @@ bool gameOn = false;
 // -turned on under WM_CREATE
 bool sound = false;
 
+//if initializing DirectSound failed
+bool dirSndFailed = false;
 
 //high scores
 HiScore *scores = NULL;
@@ -121,6 +126,8 @@ void CleanUpDirSound();
 int WINAPI WinMain(HINSTANCE hinstance, HINSTANCE hprevinstance,
                                         LPSTR lpcmdline, int ncmdshow)
 {
+  InitCommonControls();
+
   WNDCLASSEX winclass;
   MSG msg;
   ATOM atom;
@@ -132,7 +139,7 @@ int WINAPI WinMain(HINSTANCE hinstance, HINSTANCE hprevinstance,
   winclass.cbClsExtra = 0;
   winclass.cbWndExtra = 0;
   winclass.hInstance = hinstance;
-  winclass.hIcon = LoadIcon(NULL, IDI_APPLICATION);
+  winclass.hIcon = LoadIcon(hinstance,MAKEINTRESOURCE(PROG_ICON));
   winclass.hCursor = LoadCursor(NULL, IDC_ARROW);
   winclass.hbrBackground = (HBRUSH)GetStockObject(DKGRAY_BRUSH);
   winclass.lpszMenuName = "MyMenu";
@@ -173,13 +180,14 @@ int WINAPI WinMain(HINSTANCE hinstance, HINSTANCE hprevinstance,
   if(InitDirectSound() < 0)
   {
     CleanUpDirSound();
-    CleanUpDirDraw();
     MessageBox(myHandle, 
                "Couldn't start DirectSound engine on your computer. " 
                "Make sure you have at least version 8 of "
-               "DirectX installed.", 
+               "DirectX installed.\nThis program will continue, however "
+			   "sound will be disabled.", 
                "Error", MB_OK | MB_ICONEXCLAMATION);
-    return 0;
+   	dirSndFailed = true;
+	PostMessage(myHandle,WM_COMMAND,GAME_SOUNDONOFF,0);
   }
   
   

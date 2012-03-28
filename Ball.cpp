@@ -5,7 +5,7 @@
  
  #include "Ball.h"
  #include "Field.h"
- #include "D2Globals.h"
+ #include "D3Globals.h"
 
 /*CONTRUCTOR****************************************************************/
  Ball::Ball( int x, int y, int delta, Field *ptr)

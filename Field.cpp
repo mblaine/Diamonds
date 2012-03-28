@@ -5,7 +5,7 @@
  
  #include "Field.h"
  #include "Ball.h"
- #include "D2Globals.h"
+ #include "D3Globals.h"
 
 
 /*CONSTRUCTOR***************************************************************/
@@ -19,7 +19,7 @@
   setLevel();
  
   gameState = PLAYING;
-  hasSmallKey = false;
+  hasKey = false;
   horizReversed = false;
   score = 0;
   setLevelName();
@@ -29,10 +29,10 @@
 /*DESTRUCTOR****************************************************************/
  Field::~Field()//destructor
  {
-  for( int y=0; y<ARRAYHEIGHT; y++)
+  if(ball != NULL)
   {
-       for( int x=0; x<ARRAYWIDTH; x++)
-       { delete blocks[y][x]; blocks[y][x]=NULL; }
+    delete ball;
+    ball = NULL;
   }
  }//end destructor
 
@@ -43,15 +43,9 @@ void Field::nextLevel()
   
   delete ball;
   ball = NULL;
-     
-  for( int y=0; y<ARRAYHEIGHT; y++)
-  {
-       for( int x=0; x<ARRAYWIDTH; x++)
-       { delete blocks[y][x]; blocks[y][x]=NULL; }
-  }
   
   gameState = PLAYING;
-  hasSmallKey = false;
+  hasKey = false;
   horizReversed = false;
 
   ball = new Ball(11*BLOCKWIDTH, 11*BLOCKHEIGHT, (int)BALLDELTA, this);
@@ -64,13 +58,7 @@ void Field::nextLevel()
 /*restartLEVEL**************************************************************/
 void Field::restartLevel()
 {      
-  for( int y=0; y<ARRAYHEIGHT; y++)
-  {
-       for( int x=0; x<ARRAYWIDTH; x++)
-       { delete blocks[y][x]; blocks[y][x]=NULL; }
-  }
-
-  hasSmallKey = false;
+  hasKey = false;
   horizReversed = false;
 
   setLevel();
@@ -90,8 +78,8 @@ void Field::fillInBlocks(string input)
 {
  /*
   * l(ight blue), b(lue), r(ed), g(reen), (bro)w(n), p(urple) = color blocks
-  * B(lue), R(ed), G(reen), (bro)W(n), P(urple), O(range) = color change keys
-  * d(iamond), s(kull), small (k)ey, L(ock), S(olid), (re)v(erse), n(ull)
+  * B(lue), R(ed), G(reen), (bro)W(n), P(urple), O(range) = color brushes
+  * d(iamond), s(kull), (k)ey, L(ock), S(olid), (re)v(erse), n(ull)
   */
 
  //we're going to switch on each character in the input string to determine
@@ -110,90 +98,90 @@ void Field::fillInBlocks(string input)
     	   {
                 //color blocks
                 case 'l':
-                blocks[y][x] = new ColorBlock(ltBlue);
+                blocks[y][x] = COLOR_LTBLUE;
                 colorBlocks++;
                 break;
 
                 case 'b':
-                blocks[y][x] = new ColorBlock(blue);
+                blocks[y][x] = COLOR_BLUE;
                 colorBlocks++;
                 break;
         
                 case 'r':
-                blocks[y][x] = new ColorBlock(red);
+                blocks[y][x] = COLOR_RED;
                 colorBlocks++;
                 break;
         
                 case 'g':
-                blocks[y][x] = new ColorBlock(green);
+                blocks[y][x] = COLOR_GREEN;
                 colorBlocks++;
                 break;
         
                 case 'w':
-                blocks[y][x] = new ColorBlock(brown);
+                blocks[y][x] = COLOR_BROWN;
                 colorBlocks++;
                 break;
         
                 case 'p':
-                blocks[y][x] = new ColorBlock(purple);
+                blocks[y][x] = COLOR_PURPLE;
                 colorBlocks++;
                 break;
 
 
-                //color change keys
+                //brush blocks
                 case 'B':
-                blocks[y][x] = new ColorChangeKey(blue);
+                blocks[y][x] = BRUSH_BLUE;
                 break;
         
                 case 'R':
-                blocks[y][x] = new ColorChangeKey(red);
+                blocks[y][x] = BRUSH_RED;
                 break;
         
                 case 'G':
-                blocks[y][x] = new ColorChangeKey(green);
+                blocks[y][x] = BRUSH_GREEN;
                 break;
         
                 case 'W':
-                blocks[y][x] = new ColorChangeKey(brown);
+                blocks[y][x] = BRUSH_BROWN;
                 break;
         
                 case 'P':
-                blocks[y][x] = new ColorChangeKey(purple);
+                blocks[y][x] = BRUSH_PURPLE;
                 break;
         
                 case 'O':
-                blocks[y][x] = new ColorChangeKey(orange);
+                blocks[y][x] = BRUSH_ORANGE;
                 break;
         
         
                 //the rest
                 case 'd':
-                blocks[y][x] = new Diamond();
+                blocks[y][x] = DIAMOND;
                 diamondBlocks++;
                 break;
         
         	   	case 's':
-                blocks[y][x] = new Skull();
+                blocks[y][x] = SKULL;
                 break;
         
                 case 'k':
-                blocks[y][x] = new SmallKey();
+                blocks[y][x] = KEY;
                 break;
         
                 case 'L':
-                blocks[y][x] = new Lock();
+                blocks[y][x] = LOCK;
                 break;
         
                 case 'S':
-                blocks[y][x] = new Solid();
+                blocks[y][x] = SOLID;
                 break;
         
                 case 'v':
-                blocks[y][x] = new Reverse;
+                blocks[y][x] = REVERSE;
                 break;
         
                 default:
-                blocks[y][x] = NULL;
+                blocks[y][x] = NULL_BLOCK;
                 break;
 
 
@@ -208,7 +196,6 @@ void Field::fillInBlocks(string input)
  {
       //SET EVERYTHING UP////////////////////////////////////////////////////
       FieldToBall toReturn = {NOYCHANGE, NOXMOVE, nullColor};//to return
-      BlockToField returnedInfo;//info to be ret'd from a block object
 
       bool collisionOccured = false;//if there's a collision
       int cellX = -1;//used in event of a collison
@@ -221,247 +208,246 @@ void Field::fillInBlocks(string input)
       
     //DETERMINE IF A COLLISION///////////////////////////////////////////////     
 
-            //collision w/ ball's top-left corner, but not if ball is wedged
-            //  in a corner, touching a block it shouldn't
-      if(north>=0 && west>=0)
-      {
-       if(blocks[north][west]!=NULL 
-          && !(blocks[south][west]!=NULL && blocks[north][east]!=NULL)  )
-          {cellY = north; cellX = west; collisionOccured = true;}
-      }
+           //collision w/ ball's top-left corner, but not if ball is wedged
+           //  in a corner, touching a block it shouldn't
+     if(north>=0 && west>=0)
+     {
+      if(blocks[north][west]!=NULL_BLOCK 
+       &&!(blocks[south][west]!=NULL_BLOCK&&blocks[north][east]!=NULL_BLOCK))
+       {cellY = north; cellX = west; collisionOccured = true;}
+     }
 
-            //collision w/ ball's top-right corner, but not if ball is wedged
-            //  in a corner, touching a block it shouldn't
-      if(north>=0 && east<ARRAYWIDTH && !collisionOccured)
-      {
-       if(blocks[north][east]!=NULL 
-          && !(blocks[south][east]!=NULL && blocks[north][west]!=NULL)  )
-          {cellY = north; cellX = east; collisionOccured = true;}
-      }
+          //collision w/ ball's top-right corner, but not if ball is wedged
+          //  in a corner, touching a block it shouldn't
+    if(north>=0 && east<ARRAYWIDTH && !collisionOccured)
+    {
+      if(blocks[north][east]!=NULL_BLOCK
+       &&!(blocks[south][east]!=NULL_BLOCK&&blocks[north][west]!=NULL_BLOCK))
+       {cellY = north; cellX = east; collisionOccured = true;}
+    }
 
-            //collision w/ ball's bottom-right corner, but not if ball is
-            //  wedged in a corner, touching a block it shouldn't
-      if(south<ARRAYHEIGHT && east<ARRAYWIDTH && !collisionOccured)
-      {
-       if(blocks[south][east]!=NULL 
-          && !(blocks[north][east]!=NULL && blocks[south][west]!=NULL)  )
-          {cellY = south; cellX = east; collisionOccured = true;}
-      }
+          //collision w/ ball's bottom-right corner, but not if ball is
+          //  wedged in a corner, touching a block it shouldn't
+    if(south<ARRAYHEIGHT && east<ARRAYWIDTH && !collisionOccured)
+    {
+      if(blocks[south][east]!=NULL_BLOCK 
+       &&!(blocks[north][east]!=NULL_BLOCK&&blocks[south][west]!=NULL_BLOCK))
+       {cellY = south; cellX = east; collisionOccured = true;}
+    }
 
-            //collision w/ ball's bottom-left corner, but not if ball is
-            //  wedged in a corner, touching a block it shouldn't
-      if(south<ARRAYHEIGHT && west>=0 && !collisionOccured)
-      {
-       if(blocks[south][west]!=NULL 
-          && !(blocks[north][west]!=NULL && blocks[south][east]!=NULL)  )
-          {cellY = south; cellX = west; collisionOccured = true;}
-      }
+        //collision w/ ball's bottom-left corner, but not if ball is
+        //  wedged in a corner, touching a block it shouldn't
+    if(south<ARRAYHEIGHT && west>=0 && !collisionOccured)
+    {
+      if(blocks[south][west]!=NULL_BLOCK
+       &&!(blocks[north][west]!=NULL_BLOCK&&blocks[south][east]!=NULL_BLOCK))
+       {cellY = south; cellX = west; collisionOccured = true;}
+    }
 
     //IF COLLISION, ALTER BALL'S DIRECTION BASED ON ADJACENT BLOCK POSITIONS
-     if(!collisionOccured)
-     {return toReturn;}
+    if(!collisionOccured)
+    {return toReturn;}
 
 
-     if(north==cellY && west==cellX)//impact by top-left corner of ball
-     {
-      //checking for all possible situations
+   if(north==cellY && west==cellX)//impact by top-left corner of ball
+   {
+    //checking for all possible situations
       
-      if(north==south)//squarely hit side of block
-      {toReturn.xMoveInfo = XBACKRIGHT;}
+    if(north==south)//squarely hit side of block
+    {toReturn.xMoveInfo = XBACKRIGHT;}
       
-      //hit border between blocks on the side, not hitting blocks above and
-      //  below
-      else if(north!=south && blocks[south][west]!=NULL
-             && blocks[south][east]==NULL && blocks[north][east]==NULL )
-      {toReturn.xMoveInfo = XBACKRIGHT;}
+    //hit border between blocks on the side, not hitting blocks above and
+    //  below
+    else if(north!=south && blocks[south][west]!=NULL
+          &&blocks[south][east]==NULL_BLOCK&&blocks[north][east]==NULL_BLOCK)
+          {toReturn.xMoveInfo = XBACKRIGHT;}
       
-      //hit corner of block, not touching any others blocks around
-      else if(north!=south && blocks[south][west]==NULL
-             && blocks[south][east]==NULL && blocks[north][east]==NULL )
-      {      
+    //hit corner of block, not touching any others blocks around
+    else if(north!=south && blocks[south][west]==NULL_BLOCK
+          &&blocks[south][east]==NULL_BLOCK&&blocks[north][east]==NULL_BLOCK)
+    {      
              //if close enough to corner...
              if( info.y > cellY*BLOCKHEIGHT + 2*BLOCKHEIGHT/3 )
              {toReturn.yMoveInfo = YGODOWN;}
              if( info.x > cellX*BLOCKWIDTH + 2*BLOCKWIDTH/3 )
              {toReturn.xMoveInfo = XBACKRIGHT;}
-      }
+    }
       
-      else if(west==east)//squarely hit bottom of block
-      {toReturn.yMoveInfo = YGODOWN;}
+    else if(west==east)//squarely hit bottom of block
+    {toReturn.yMoveInfo = YGODOWN;}
 
-      //hit border between two blocks, not hitting blocks on either side
-      else if(west!=east && blocks[north][east]!=NULL
-             && blocks[south][east]==NULL && blocks[south][west]==NULL )
-      {toReturn.yMoveInfo = YGODOWN;}
+    //hit border between two blocks, not hitting blocks on either side
+    else if(west!=east && blocks[north][east]!=NULL_BLOCK
+          &&blocks[south][east]==NULL_BLOCK&&blocks[south][west]==NULL_BLOCK)
+          {toReturn.yMoveInfo = YGODOWN;}
             
-      //ball actually wedged in a corner, should move opposite direction
-      //  than normally expected
-      else if(west!=east && blocks[south][east]!=NULL)
-      {
+    //ball actually wedged in a corner, should move opposite direction
+    //  than normally expected
+    else if(west!=east && blocks[south][east]!=NULL_BLOCK)
+    {
              if(info.y >= (cellY+1)*BLOCKHEIGHT - BALLDELTA )
              {toReturn.yMoveInfo = YGODOWN; toReturn.xMoveInfo = XBACKLEFT;}
              else
              {toReturn.yMoveInfo = YGOUP; toReturn.xMoveInfo = XBACKRIGHT;}
-      }
+    }
       
-     }//end if NW impact
+   }//end if NW impact
 
 
 
 
-     if(north==cellY && east==cellX)//impact by top-right corner of ball
-     {
-      //checking for all possible situations
+   if(north==cellY && east==cellX)//impact by top-right corner of ball
+   {
+    //checking for all possible situations
       
-      if(north==south)//squarely hit side of block
-      {toReturn.xMoveInfo = XBACKLEFT;}
+    if(north==south)//squarely hit side of block
+    {toReturn.xMoveInfo = XBACKLEFT;}
       
-      //hit border between blocks on the side, not hitting blocks above and
-      //  below
-      else if(north!=south && blocks[south][east]!=NULL
-             && blocks[south][west]==NULL && blocks[north][west]==NULL )
-      {toReturn.xMoveInfo = XBACKLEFT;}
+    //hit border between blocks on the side, not hitting blocks above and
+    //  below
+    else if(north!=south && blocks[south][east]!=NULL_BLOCK
+          &&blocks[south][west]==NULL_BLOCK&&blocks[north][west]==NULL_BLOCK)
+          {toReturn.xMoveInfo = XBACKLEFT;}
       
-      //hit corner of block, not touching any others blocks around
-      else if(north!=south && blocks[south][west]==NULL
-             && blocks[south][east]==NULL && blocks[north][west]==NULL )
-      {      
+    //hit corner of block, not touching any others blocks around
+    else if(north!=south && blocks[south][west]==NULL_BLOCK
+          &&blocks[south][east]==NULL_BLOCK&&blocks[north][west]==NULL_BLOCK)
+    {      
              //if close enough to corner...
              if( info.y > cellY*BLOCKHEIGHT + 2*BLOCKHEIGHT/3 )
              {toReturn.yMoveInfo = YGODOWN;}
              if( info.x < cellX*BLOCKWIDTH + 1*BLOCKWIDTH/3 )
              {toReturn.xMoveInfo = XBACKLEFT;}
-      }
+    }
       
-      else if(west==east)//squarely hit bottom of block
-      {toReturn.yMoveInfo = YGODOWN;}
+    else if(west==east)//squarely hit bottom of block
+    {toReturn.yMoveInfo = YGODOWN;}
 
-      //hit border between two blocks, not hitting blocks on either side
-      else if(west!=east && blocks[north][west]!=NULL
-             && blocks[south][east]==NULL && blocks[south][west]==NULL )
-      {toReturn.yMoveInfo = YGODOWN;}
+    //hit border between two blocks, not hitting blocks on either side
+    else if(west!=east && blocks[north][west]!=NULL_BLOCK
+          &&blocks[south][east]==NULL_BLOCK&&blocks[south][west]==NULL_BLOCK)
+          {toReturn.yMoveInfo = YGODOWN;}
       
-      //ball actually wedged in a corner, should move opposite direction
-      //  than normally expected
-      else if(west!=east && blocks[south][west]!=NULL)
-      {
+    //ball actually wedged in a corner, should move opposite direction
+    //  than normally expected
+    else if(west!=east && blocks[south][west]!=NULL_BLOCK)
+    {
              if(info.y >= (cellY+1)*BLOCKHEIGHT - BALLDELTA )
              {toReturn.yMoveInfo = YGODOWN; toReturn.xMoveInfo = XBACKRIGHT;}
              else
              {toReturn.yMoveInfo = YGOUP; toReturn.xMoveInfo = XBACKLEFT;}
-      }
+    }
       
-     }//end if NE impact
+   }//end if NE impact
 
 
 
 
-     if(south==cellY && east==cellX)//impact by bottom-right corner of ball
-     {
-      //checking for all possible situations
+   if(south==cellY && east==cellX)//impact by bottom-right corner of ball
+   {
+    //checking for all possible situations
       
-      if(north==south)//squarely hit side of block
-      {toReturn.xMoveInfo = XBACKLEFT;}
+    if(north==south)//squarely hit side of block
+    {toReturn.xMoveInfo = XBACKLEFT;}
       
-      //hit border between blocks on the side, not hitting blocks above and
-      //  below
-      else if(north!=south && blocks[north][east]!=NULL
-             && blocks[south][west]==NULL && blocks[north][west]==NULL )
-      {toReturn.xMoveInfo = XBACKLEFT;}
+    //hit border between blocks on the side, not hitting blocks above and
+    //  below
+    else if(north!=south && blocks[north][east]!=NULL_BLOCK
+          &&blocks[south][west]==NULL_BLOCK&&blocks[north][west]==NULL_BLOCK)
+          {toReturn.xMoveInfo = XBACKLEFT;}
       
-      //hit corner of block, not touching any others blocks around
-      else if(north!=south && blocks[south][west]==NULL
-             && blocks[north][west]==NULL && blocks[north][east]==NULL )
-      {      
+    //hit corner of block, not touching any others blocks around
+    else if(north!=south && blocks[south][west]==NULL_BLOCK
+          &&blocks[north][west]==NULL_BLOCK&&blocks[north][east]==NULL_BLOCK)
+    {      
              //if close enough to corner...
              if( info.y < cellY*BLOCKHEIGHT + 1*BLOCKHEIGHT/3 )
              {toReturn.yMoveInfo = YGOUP;}
              if( info.x < cellX*BLOCKWIDTH + 1*BLOCKWIDTH/3 )
              {toReturn.xMoveInfo = XBACKLEFT;}
-      }
+    }
       
-      else if(west==east)//squarely hit top of block
-      {toReturn.yMoveInfo = YGOUP;}
+    else if(west==east)//squarely hit top of block
+    {toReturn.yMoveInfo = YGOUP;}
 
-      //hit border between two blocks, not hitting blocks on either side
-      else if(west!=east && blocks[south][west]!=NULL
-             && blocks[north][east]==NULL && blocks[north][west]==NULL )
-      {toReturn.yMoveInfo = YGOUP;}
+    //hit border between two blocks, not hitting blocks on either side
+    else if(west!=east && blocks[south][west]!=NULL_BLOCK
+          &&blocks[north][east]==NULL_BLOCK&&blocks[north][west]==NULL_BLOCK)
+          {toReturn.yMoveInfo = YGOUP;}
       
-      //ball actually wedged in a corner, should move opposite direction
-      //  than normally expected
-      else if(west!=east && blocks[north][west]!=NULL)
-      {
+    //ball actually wedged in a corner, should move opposite direction
+    //  than normally expected
+    else if(west!=east && blocks[north][west]!=NULL_BLOCK)
+    {
              if(info.y >= (cellY+1)*BLOCKHEIGHT - BALLDELTA )
              {toReturn.yMoveInfo = YGODOWN; toReturn.xMoveInfo = XBACKLEFT;}
              else
              {toReturn.yMoveInfo = YGOUP; toReturn.xMoveInfo = XBACKRIGHT;}
-      }
+    }
       
-     }//end if SE impact
+   }//end if SE impact
 
 
 
 
-     if(south==cellY && west==cellX)//impact by bottom-left corner of ball
-     {
-      //checking for all possible situations
+   if(south==cellY && west==cellX)//impact by bottom-left corner of ball
+   {
+    //checking for all possible situations
+    
+    if(north==south)//squarely hit side of block
+    {toReturn.xMoveInfo = XBACKRIGHT;}
       
-      if(north==south)//squarely hit side of block
-      {toReturn.xMoveInfo = XBACKRIGHT;}
+    //hit border between blocks on the side, not hitting blocks above and
+    //  below
+    else if(north!=south && blocks[north][west]!=NULL_BLOCK
+          &&blocks[south][east]==NULL_BLOCK&&blocks[north][east]==NULL_BLOCK)
+          {toReturn.xMoveInfo = XBACKRIGHT;}
       
-      //hit border between blocks on the side, not hitting blocks above and
-      //  below
-      else if(north!=south && blocks[north][west]!=NULL
-             && blocks[south][east]==NULL && blocks[north][east]==NULL )
-      {toReturn.xMoveInfo = XBACKRIGHT;}
-      
-      //hit corner of block, not touching any others blocks around
-      else if(north!=south && blocks[north][east]==NULL
-             && blocks[south][east]==NULL && blocks[north][west]==NULL )
-      {      
+    //hit corner of block, not touching any others blocks around
+    else if(north!=south && blocks[north][east]==NULL_BLOCK
+          &&blocks[south][east]==NULL_BLOCK&&blocks[north][west]==NULL_BLOCK)
+    {      
              //if close enough to corner...
              if( info.y < cellY*BLOCKHEIGHT + 1*BLOCKHEIGHT/3 )
              {toReturn.yMoveInfo = YGOUP;}
              if( info.x > cellX*BLOCKWIDTH + 2*BLOCKWIDTH/3 )
              {toReturn.xMoveInfo = XBACKRIGHT;}
-      }
+    }
       
-      else if(west==east)//squarely hit top of block
-      {toReturn.yMoveInfo = YGOUP;}
+    else if(west==east)//squarely hit top of block
+    {toReturn.yMoveInfo = YGOUP;}
 
-      //hit border between two blocks, not hitting blocks on either side
-      else if(west!=east && blocks[south][east]!=NULL
-             && blocks[north][east]==NULL && blocks[north][west]==NULL )
-      {toReturn.yMoveInfo = YGOUP;}
+    //hit border between two blocks, not hitting blocks on either side
+    else if(west!=east && blocks[south][east]!=NULL_BLOCK
+          &&blocks[north][east]==NULL_BLOCK&&blocks[north][west]==NULL_BLOCK)
+          {toReturn.yMoveInfo = YGOUP;}
       
-      //ball actually wedged in a corner, should move opposite direction
-      //  than normally expected
-      else if(west!=east && blocks[north][east]!=NULL)
-      {
+    //ball actually wedged in a corner, should move opposite direction
+    //  than normally expected
+    else if(west!=east && blocks[north][east]!=NULL_BLOCK)
+    {
              if(info.y <= cellY*BLOCKHEIGHT + BALLDELTA )
              {toReturn.yMoveInfo = YGOUP; toReturn.xMoveInfo = XBACKLEFT;}
              else
              {toReturn.yMoveInfo = YGODOWN; toReturn.xMoveInfo = XBACKRIGHT;}
-      }
+    }
       
-     }//end if SW impact
+   }//end if SW impact
 
 
 
 
-    //IF A COLLISION, REACT DEPENDING ON WHAT KIND OF BLOCK WAS HIT//////////    
-      if(collisionOccured)
-      {
-        returnedInfo = blocks[cellY][cellX]->collision();//get info
+   //IF A COLLISION, REACT DEPENDING ON WHAT KIND OF BLOCK WAS HIT//////////    
+   if(collisionOccured)
+   {
 
-        switch(returnedInfo.msg)//switch on the message sent from the block
+
+        switch(blocks[cellY][cellX])//switch on type of Block hit
         {
-          case MSG_DIAMOND:
+          case DIAMOND:
                if(colorBlocks == 0)//if no color blocks left
                {
-                delete blocks[cellY][cellX];//destroy it
-                blocks[cellY][cellX] = NULL;
+                blocks[cellY][cellX] = NULL_BLOCK;//destroy it
                 diamondBlocks--;
                 score+=100;
                 #ifdef WIN32
@@ -480,17 +466,23 @@ void Field::fillInBlocks(string input)
                 {gameState = LEVELWON;}
                break;
           
-          case MSG_SKULL:
+          case SKULL:
                gameState = BALLDIED;
                break;
 
-          case MSG_COLORCHANGEKEY://tell ball to change its color
-               if(info.c != (color)returnedInfo.info)
+          case BRUSH_BLUE://tell ball to change its color
+          case BRUSH_RED:
+          case BRUSH_GREEN:
+          case BRUSH_BROWN:
+          case BRUSH_PURPLE:
+          case BRUSH_ORANGE:
+                            //convert from Block to Color enum
+               if(info.c != (Color)blocks[cellY][cellX]-BRUSH_BLUE+2)
                {
-                toReturn.change = (color)returnedInfo.info;
+                toReturn.change = (Color)(blocks[cellY][cellX]-BRUSH_BLUE+2);
                 #ifdef WIN32
                 if(sound)
-                colorkey_snd->Play();
+                colorbrush_snd->Play();
                 #endif
                }
                else
@@ -502,11 +494,16 @@ void Field::fillInBlocks(string input)
                }
                break;
 
-          case MSG_COLORBLOCK:
-               if(info.c == (color)returnedInfo.info)//if colors match
+          case COLOR_LTBLUE:
+          case COLOR_BLUE:
+          case COLOR_RED:
+          case COLOR_GREEN:
+          case COLOR_BROWN:
+          case COLOR_PURPLE:
+               //if colors match    (convert from BLock to Color enum)
+               if(info.c == (Color)blocks[cellY][cellX]-COLOR_LTBLUE+1)
                {
-                delete blocks[cellY][cellX];//destroy it
-                blocks[cellY][cellX] = NULL;
+                blocks[cellY][cellX] = NULL_BLOCK;//destroy it
                 colorBlocks--;
                 score+=3;
                 #ifdef WIN32
@@ -523,23 +520,22 @@ void Field::fillInBlocks(string input)
                }
                break;
 
-          case MSG_SOLID://hit immovable block
+          case SOLID://hit immovable block
                 #ifdef WIN32
                 if(sound)
                 bounce2_snd->Play();
                 #endif
                break;
 
-          case MSG_SMALLKEY://hit a small key block
-               if(!hasSmallKey && info.c == orange)
+          case KEY://hit a key block
+               if(!hasKey && info.c == orange)
                {
-                delete blocks[cellY][cellX];//destroy key block
-                blocks[cellY][cellX] = NULL;
-                hasSmallKey = true;
+                blocks[cellY][cellX] = NULL_BLOCK;//destroy key block
+                hasKey = true;
                 score+=25;
                 #ifdef WIN32
                 if(sound)
-                smallkey_snd->Play();
+                key_snd->Play();
                 #endif
                }
                else
@@ -551,12 +547,11 @@ void Field::fillInBlocks(string input)
                }
                break;
 
-          case MSG_LOCK://hit a lock
-               if(hasSmallKey && info.c == orange)
+          case LOCK://hit a lock
+               if(hasKey && info.c == orange)
                {
-                delete blocks[cellY][cellX];//destroy lock
-                blocks[cellY][cellX] = NULL;
-                hasSmallKey = false;
+                blocks[cellY][cellX] = NULL_BLOCK;//destroy lock
+                hasKey = false;
                 score+=50;
                 #ifdef WIN32
                 if(sound)
@@ -572,22 +567,21 @@ void Field::fillInBlocks(string input)
                }
                break;
 
-          case MSG_REVERSE://hit a 'reverse' block
+          case REVERSE://hit a 'reverse' block
                if(!horizReversed)
                {horizReversed = true;}
                else
                {horizReversed = false;}
-               delete blocks[cellY][cellX];//destroy it
-               blocks[cellY][cellX] = NULL;
-                #ifdef WIN32
-                if(sound)
+               blocks[cellY][cellX] = NULL_BLOCK;//destroy it
+               #ifdef WIN32
+               if(sound)
                 reverse_snd->Play();
-                #endif
+               #endif
                break;
                 
           default: break;
         }//end switch
-      }//end if collision happened
+   }//end if collision happened
       
       return toReturn;//info back to ball object that called this function
  }//end checkCollision()
@@ -595,6 +589,18 @@ void Field::fillInBlocks(string input)
 /*setLEVEL******************************************************************/
 void Field::setLevel()
 { 
+ /*
+  * This method is to set up each level as it begins. Why represent each
+  * level using char's in a string? Using a two-dimensional array of the
+  * constants representing each type of block was tedious and difficult
+  * to edit. I know string concatination is inefficient, however this
+  * only takes place when each level begins, and under the WM_TIMER
+  * message in WindowProc() I include an arbitrary delay between levels
+  * so the player can tell what's going on anyway. Also, the function
+  * fillInBlocks(), cycling through each char in the string to initalize
+  * the blocks[] array, is able to count how many color and diamond blocks
+  * there are.
+  */
 
 	 string setup = "";     
 
@@ -603,16 +609,16 @@ void Field::setLevel()
 
 /*
  * l(ight blue), b(lue), r(ed), g(reen), (bro)w(n), p(urple) =  color blocks
- * B(lue), R(ed), G(reen), (bro)W(n), P(urple), O(range) =  color change keys
- * d(iamond), s(kull), small (k)ey, L(ock), S(olid), (re)v(erse), n(ull)
+ * B(lue), R(ed), G(reen), (bro)W(n), P(urple), O(range) =  color brushes
+ * d(iamond), s(kull), (k)ey, L(ock), S(olid), (re)v(erse), n(ull)
  */
   
 
 	 //fill 'er up 
 	switch(currentLevel)
 	{
-	 case 1:
-	 {
+	case 1:
+	{
 		setup  = "snnnnwwnnnns";
 		setup += "SnnnSggSnnnS";
 		setup += "nnndggggdnnn";
@@ -625,9 +631,9 @@ void Field::setLevel()
 		setup += "nnndbbbbdnnn";
 		setup += "nnnnSbbSnnnn";
 		setup += "nnnnnppnnnnn";
-	 fillInBlocks(setup);
-	 break;
-	 }// end case 1
+	fillInBlocks(setup);
+	break;
+	}// end case 1
 
 	case 2:
 	{
@@ -1151,6 +1157,726 @@ void Field::setLevel()
 	break;
 	}// end case 30
 
+	case 31:
+	{
+		setup  = "rnrnnslRlnnG";
+		setup += "nrnnnnnlnnnn";
+		setup += "nnnnnnnnnnnS";
+		setup += "nnnnnnnnnnnn";
+		setup += "nnnnnSnnnSnn";
+		setup += "nnnnnSnnnSnn";
+		setup += "nnnnnSnnnSnn";
+		setup += "nnnnnSnnnSnn";
+		setup += "nnnnnnnnnnnn";
+		setup += "nnnndnnnnndn";
+		setup += "ngnnndndndnn";
+		setup += "gngnnndndnnn";
+	fillInBlocks(setup);
+	break;
+	}// end case 31
+
+	case 32:
+	{
+		setup  = "snnnnnlnnnRs";
+		setup += "nnnnnlrlnnnn";
+		setup += "nnnnlrlrlnnn";
+		setup += "nnnlrlnlrlnn";
+		setup += "nnlrlnnnlrln";
+		setup += "nlrlnnnlrlnn";
+		setup += "lrlnnnlrlnnn";
+		setup += "nlrlnnnlrnnn";
+		setup += "nnlrlnlrnnln";
+		setup += "nlrlnlrlnlrl";
+		setup += "lrlnnnlrlrln";
+		setup += "dlnnnnnlrlnn";
+	fillInBlocks(setup);
+	break;
+	}// end case 32
+
+	case 33:
+	{
+		setup  = "snbnnsnnnnbn";
+		setup += "nblnnnnnnbln";
+		setup += "nnbnnnnbnnbn";
+		setup += "nnnnnnblnnnn";
+		setup += "nnnnbnnbnnnd";
+		setup += "nnnblnnnnndn";
+		setup += "nnnnbnnnbnnd";
+		setup += "nnbnnnnblnnn";
+		setup += "nblnnnnnbnnn";
+		setup += "nnbnnnbnnnbn";
+		setup += "nnnnnblnnbln";
+		setup += "Bnnnnnbnnnbn";
+	fillInBlocks(setup);
+	break;
+	}// end case 33
+
+	case 34:
+	{
+		setup  = "nnnnnnnnnnnn";
+		setup += "nbbbbbllnnnn";
+		setup += "nnnnrbdrnnnn";
+		setup += "nnnrbdrnnnnn";
+		setup += "nnrbdrnnnnnn";
+		setup += "nrbdsnnnnnnn";
+		setup += "nbddddrnnnnn";
+		setup += "nbbbbblrnnnn";
+		setup += "nnnnrbllrnnn";
+		setup += "Rnnnnrbbllln";
+		setup += "Snnnnnrbbbbn";
+		setup += "Bnnnnnnnnnnn";
+	fillInBlocks(setup);
+	break;
+	}// end case 34
+
+	case 35:
+	{
+		setup  = "nnnSsSnnnPnn";
+		setup += "nnnnnnnnnnnn";
+		setup += "nnnnnnnnnnnn";
+		setup += "nlllplllwnnn";
+		setup += "nlllpplwwnnn";
+		setup += "nllpdpwwlnnn";
+		setup += "nlpppppllnnn";
+		setup += "ndpppppllnnn";
+		setup += "nppdpdpplnnn";
+		setup += "Sppppppplnnn";
+		setup += "Wdplpllllnnn";
+		setup += "pplllllllnnn";
+	fillInBlocks(setup);
+	break;
+	}// end case 35
+
+	case 36:
+	{
+		setup  = "rrnsrrPpGgnn";
+		setup += "rrrrrrnpngnn";
+		setup += "nrrrrnnpngnn";
+		setup += "nnrrnnnlngnn";
+		setup += "nSrrSnnpngnn";
+		setup += "RSddsnnpnlnn";
+		setup += "nSddSnnpngnn";
+		setup += "nnrrnnnpngnn";
+		setup += "nnllnnnpngnn";
+		setup += "nrrrrnnpngnn";
+		setup += "rrrrrrnpngnn";
+		setup += "rrsnrrnpngnn";
+	fillInBlocks(setup);
+	break;
+	}// end case 36
+
+	case 37:
+	{
+		setup  = "nlbbblbbbbvB";
+		setup += "nbblnnnlbbnS";
+		setup += "nbbnblbnblns";
+		setup += "nlnnbnblbbnn";
+		setup += "nbblbdbbblnn";
+		setup += "nlbbblbnbbnn";
+		setup += "nbblnnnlbbnn";
+		setup += "nbbbblbnnlnn";
+		setup += "nlbbbbblbbnn";
+		setup += "nbblbbbbblnn";
+		setup += "nnnnnnnnnnnn";
+		setup += "nnnnnnnnnnnn";
+	fillInBlocks(setup);
+	break;
+	}// end case 37
+
+	case 38:
+	{
+		setup  = "dndndndndndn";
+		setup += "nnnnnnnnnnnn";
+		setup += "nnRnnnrnnnbn";
+		setup += "nlnlnrnrnbnb";
+		setup += "nnnlnnnrnnnb";
+		setup += "snlnsnrnsnbn";
+		setup += "nnnlnnnrnnnb";
+		setup += "nlnlnrnrnbnb";
+		setup += "nnBnnnrnnnbn";
+		setup += "nnnnnnnnnnnn";
+		setup += "nnnnnnnnnnnn";
+		setup += "ndndndndndnn";
+	fillInBlocks(setup);
+	break;
+	}// end case 38
+
+	case 39:
+	{
+		setup  = "nnnnnnnnWnnB";
+		setup += "nrnrnnnnnnnn";
+		setup += "nnsnnwnwnnnn";
+		setup += "nrdrnnsnnbnb";
+		setup += "nndnnwdwnnsn";
+		setup += "Rnnnnndnnbdb";
+		setup += "nnnnnnnnnldn";
+		setup += "nnnnnnpnplln";
+		setup += "ngngnnnsnlnn";
+		setup += "nnsnnnpdplnn";
+		setup += "ngdgnnndllnn";
+		setup += "GndnnPnnnnnn";
+	fillInBlocks(setup);
+	break;
+	}// end case 39
+
+	case 40:
+	{
+		setup  = "skkkkkkkkkkO";
+		setup += "knbnnnnnnnnb";
+		setup += "knbSSSSSSSvb";
+		setup += "knbBddddddSb";
+		setup += "snbSddddddSb";
+		setup += "knnSddddddBl";
+		setup += "knnSLSSSSSSl";
+		setup += "knnSLLLLLSSl";
+		setup += "snnSSSSSLSSl";
+		setup += "knnSLLLLLSSl";
+		setup += "knnSLSSSSSSv";
+		setup += "kkkSLLLLLLnn";
+	fillInBlocks(setup);
+	break;
+	}// end case 40
+
+	case 41:
+	{
+		setup  = "nnnnnnnnnnnn";
+		setup += "nnnnwwwwnnnn";
+		setup += "nnwwllllwwnn";
+		setup += "nwlllbblllwn";
+		setup += "wlllbbbbllls";
+		setup += "wlllbddbllls";
+		setup += "Bwllbddbllnn";
+		setup += "nnwlbbbbwwnn";
+		setup += "nnnwwWbwnnnn";
+		setup += "nnnnnwwnnnnn";
+		setup += "nnnnnnnnnnnn";
+		setup += "nnsnnnnnnnnn";
+	fillInBlocks(setup);
+	break;
+	}// end case 41
+
+	case 42:
+	{
+		setup  = "Pnnnnnnnnnnn";
+		setup += "nnnnnrnnnlln";
+		setup += "nnnndddnnlln";
+		setup += "nnnndddnnlln";
+		setup += "nnndddddnlln";
+		setup += "nnppppppplln";
+		setup += "lnnpppppnlln";
+		setup += "lnnnpppnnlln";
+		setup += "snnnpppnnlln";
+		setup += "nnnnpppnnlln";
+		setup += "nnnnpppnnlln";
+		setup += "Rnnpppppnnnn";
+	fillInBlocks(setup);
+	break;
+	}// end case 42
+
+	case 43:
+	{
+		setup  = "WnnnnnnnnnnB";
+		setup += "nnnnnnnnnnnn";
+		setup += "nnnnnRnnnnnn";
+		setup += "nnnnnrnnnnnn";
+		setup += "nnnnwrwnnnnn";
+		setup += "nnnnvrvnnnnn";
+		setup += "nnnvlblvnnnn";
+		setup += "nnnlbbblnnnn";
+		setup += "nnnlSdSlnnnn";
+		setup += "nnnlpsglnnnn";
+		setup += "nnnlpdglnnnn";
+		setup += "nnGlpsglPnnn";
+	fillInBlocks(setup);
+	break;
+	}// end case 43
+
+	case 44:
+	{
+		setup  = "SppSwwSdddsn";
+		setup += "gSppSwwSdddn";
+		setup += "ggSppSwwSddn";
+		setup += "SggSppSwwSdn";
+		setup += "bSggSppSwwSn";
+		setup += "bbSggSppSwwn";
+		setup += "SbbSggSppSWn";
+		setup += "rSbbSggSppSn";
+		setup += "rrSbbSggSppn";
+		setup += "SrrSbbSggSPn";
+		setup += "dSrRSbBSgGSn";
+		setup += "nnnnnnnnnnnn";
+	fillInBlocks(setup);
+	break;
+	}// end case 44
+
+	case 45:
+	{
+		setup  = "snnsnnnnnvnn";
+		setup += "nnnnnnnppSln";
+		setup += "nnnnnnpnRSln";
+		setup += "nnnSppnnnSln";
+		setup += "nnnrBnnnnSln";
+		setup += "nnnrnndnnSln";
+		setup += "nnnrndddnSln";
+		setup += "nnnrnndnnSln";
+		setup += "nnnrnnnnPSln";
+		setup += "GnnrnnnbbSnO";
+		setup += "nnnLnnbnnnnn";
+		setup += "kvnSbbnnnnnn";
+	fillInBlocks(setup);
+	break;
+	}// end case 45
+
+	case 46:
+	{
+		setup  = "OvvsvvrPklbd";
+		setup += "vvvvvrplbllb";
+		setup += "svvvrpbllbll";
+		setup += "vvvrpllbllbl";
+		setup += "vvrplbllblll";
+		setup += "vrpbllbllbll";
+		setup += "RpBlbllbllbl";
+		setup += "plbllbllblll";
+		setup += "bllbllbllbln";
+		setup += "Lbllbllbllbn";
+		setup += "dSbllbllbnnn";
+		setup += "ddSblllnnnnn";
+	fillInBlocks(setup);
+	break;
+	}// end case 46
+
+	case 47:
+	{
+		setup  = "dddddddddSBk";
+		setup += "dddddddddSnn";
+		setup += "dddddddddSnn";
+		setup += "dddddddddsnR";
+		setup += "dddddddddSnn";
+		setup += "dddddddddSnn";
+		setup += "dddddddddSPn";
+		setup += "dddddddddSnn";
+		setup += "dddddddddsnn";
+		setup += "dddddddddSnG";
+		setup += "dddddddddLnn";
+		setup += "SSSSSSSSSSOn";
+	fillInBlocks(setup);
+	break;
+	}// end case 47
+
+	case 48:
+	{
+		setup  = "PnRnWnBnGnOn";
+		setup += "nnnnnnnnnnnn";
+		setup += "nOnGnBnWnPnR";
+		setup += "nnnnnnnnnnnn";
+		setup += "nnnnnnnnnnnn";
+		setup += "nnrnwnpnbngn";
+		setup += "nsdgdgdgdrnn";
+		setup += "nsdldldldrnn";
+		setup += "nnrnwnpnbngs";
+		setup += "nnnnnnnnnnnn";
+		setup += "nnnnnnnnnnnn";
+		setup += "lnnlnnlnnlnn";
+	fillInBlocks(setup);
+	break;
+	}// end case 48
+
+	case 49:
+	{
+		setup  = "lrrrrrrrrrln";
+		setup += "lrgggggggrRn";
+		setup += "lGgpppppgGln";
+		setup += "lrPdpppdPrln";
+		setup += "lrgpspspgrln";
+		setup += "lrgppsppgrln";
+		setup += "lrgpspspgrln";
+		setup += "lrgdpppdgrln";
+		setup += "lrgpppppgrln";
+		setup += "lrgggggggrln";
+		setup += "lrrrrrrrrrln";
+		setup += "llllllllllln";
+	fillInBlocks(setup);
+	break;
+	}// end case 49
+
+	case 50:
+	{
+		setup  = "PnwSnGSdvdSk";
+		setup += "SSwSnnSdSdSg";
+		setup += "nnnsnsSdSdSg";
+		setup += "wSSbnpSdSdSg";
+		setup += "wnnbnpSdSdSg";
+		setup += "SSnbSpSdSdSg";
+		setup += "WSnbSpSLSSSg";
+		setup += "bbbbSpnnSOsb";
+		setup += "BSSnSpnnSbnb";
+		setup += "nnnnnpsnSnnn";
+		setup += "nSSSSSSSSnnn";
+		setup += "nlnlnlnlnnnn";
+	fillInBlocks(setup);
+	break;
+	}// end case 50
+
+	case 51:
+	{
+		setup  = "llrrrllrllls";
+		setup += "lllllllllllR";
+		setup += "lllllllllllr";
+		setup += "llllllllllrr";
+		setup += "lllllllllsrr";
+		setup += "slvlvlvlllrr";
+		setup += "lllllllllllr";
+		setup += "llllllllllln";
+		setup += "llllllllllln";
+		setup += "llrrrllrllln";
+		setup += "lsdrllrrrlln";
+		setup += "lnrrrllrllln";
+	fillInBlocks(setup);
+	break;
+	}// end case 51
+
+	case 52:
+	{
+		setup  = "ssssssssssss";
+		setup += "nnnnnnnnnnnn";
+		setup += "nlnlnlnlnlnn";
+		setup += "SvSvSvSvSvSn";
+		setup += "nnnnnnnnnnnn";
+		setup += "nnnnnnnnnnnn";
+		setup += "nnnnnnnnnnnn";
+		setup += "nnnnnnnnnnnn";
+		setup += "nnnnnnnnnnnn";
+		setup += "LnOnWnGnRnBn";
+		setup += "LLbbrrggwwkn";
+		setup += "dLbbrrggwwkn";
+	fillInBlocks(setup);
+	break;
+	}// end case 52
+
+	case 53:
+	{
+		setup  = "OBGnnlnnnsnn";
+		setup += "nnnnbbbnnnnn";
+		setup += "nnnbbbbbnnns";
+		setup += "nnsbbbbbsnnn";
+		setup += "ngbbbvbbbgnn";
+		setup += "nbggbvbggbnn";
+		setup += "ndbggbggbdnn";
+		setup += "nSdSSbSSdSnn";
+		setup += "nnnddLddnnnn";
+		setup += "nnnSdddSnnnn";
+		setup += "nnnngdgnnnnn";
+		setup += "snnnkgnnnnnn";
+	fillInBlocks(setup);
+	break;
+	}// end case 53
+
+	case 54:
+	{
+		setup  = "Ssnnnnngnnls";
+		setup += "BrnnwPnnnnnl";
+		setup += "nnvnSwnnpGnn";
+		setup += "nnlnnnnnspnn";
+		setup += "nnvlnnbnnnnn";
+		setup += "gSnnnnSbnnrs";
+		setup += "Wgnnrnnnnnvr";
+		setup += "nnnnnrnngRnd";
+		setup += "nnpSnnnnngnn";
+		setup += "nnnpnnwsnnnn";
+		setup += "bsnnnnnwnnnn";
+		setup += "dbnnbsnnnnnn";
+	fillInBlocks(setup);
+	break;
+	}// end case 54
+
+	case 55:
+	{
+		setup  = "ngggnssssnnn";
+		setup += "gdggsngdgsnn";
+		setup += "gggsggggggss";
+		setup += "dgsgggggggdn";
+		setup += "ggggdgdgdggn";
+		setup += "gdgggnggggnn";
+		setup += "nGggnnnggnnn";
+		setup += "nnWwnnnwwnnn";
+		setup += "nnwwnnnwwnnn";
+		setup += "nnwwnnnwwnnn";
+		setup += "nnwwnnnwwnnn";
+		setup += "lnllnlnllnln";
+	fillInBlocks(setup);
+	break;
+	}// end case 55
+
+	case 56:
+	{
+		setup  = "blRwpwpwBbns";
+		setup += "nnnnnPnnnbns";
+		setup += "ggnSSSSSnbns";
+		setup += "gbnnnnnnnbLL";
+		setup += "grnnnpwwnSgg";
+		setup += "gpnSnwlllsgg";
+		setup += "gwnSnwWnlsgg";
+		setup += "gbnSnkSnSsSL";
+		setup += "glnsnkSnnnSd";
+		setup += "gnnnnsSSSnSd";
+		setup += "gnSSSSSnSnSS";
+		setup += "GnvnnnnOSlnn";
+	fillInBlocks(setup);
+	break;
+	}// end case 56
+
+	case 57:
+	{
+		setup  = "nnSnnsnnnnnn";
+		setup += "nnsnnnlnnnnn";
+		setup += "nnnnnnsnnnnn";
+		setup += "nnnsnnnlnnnn";
+		setup += "nnnnnnnsnnnn";
+		setup += "dSnnsnnnlnnn";
+		setup += "lSnnnnnnsnnn";
+		setup += "lSSnnsnnnlnn";
+		setup += "llnSSnnnnsnn";
+		setup += "llnnnnsnnnln";
+		setup += "llnnnnnnnnsn";
+		setup += "llnnnnnsnnnn";
+	fillInBlocks(setup);
+	break;
+	}// end case 57
+
+	case 58:
+	{
+		setup  = "dsnnnnnnnnBn";
+		setup += "nnnnnnnnnnnn";
+		setup += "nnnnnsnnnnnn";
+		setup += "nnnnsbnnnnnn";
+		setup += "nnnWbrnnnnnn";
+		setup += "dnsbrrrsgggs";
+		setup += "dnsbwwwsllls";
+		setup += "nnnGbwnnnnnn";
+		setup += "nnnnsbnnnnnn";
+		setup += "nnnnnsnnnnnn";
+		setup += "nnnnnnnnnnnn";
+		setup += "dsnnnnnnnnRn";
+	fillInBlocks(setup);
+	break;
+	}// end case 58
+
+	case 59:
+	{
+		setup  = "knnnnnnnnnnk";
+		setup += "nnnnnLLnnnnn";
+		setup += "nnnnSLvSnnnn";
+		setup += "nnnLvssLLnnn";
+		setup += "nnLLLLLsvLnn";
+		setup += "nLvsLddvLLLn";
+		setup += "nnLLsLLsvLnn";
+		setup += "nnnLvsLLLnnn";
+		setup += "nnnnSLvSnnnn";
+		setup += "nnnnnLLnnnnn";
+		setup += "nnnnnnnnnnnk";
+		setup += "Onnnnnnnnnnn";
+	fillInBlocks(setup);
+	break;
+	}// end case 59
+
+	case 60:
+	{
+		setup  = "GvngsgnnnnnB";
+		setup += "vnnngnnnnnnd";
+		setup += "nnnnnngnnnnd";
+		setup += "ngggggggnnsd";
+		setup += "nggggggggnsd";
+		setup += "slllllllnnsd";
+		setup += "nlllllllnnsd";
+		setup += "nrrrrrrrnnnv";
+		setup += "nrrrrrrrrnnn";
+		setup += "nbbbbbbbbbnn";
+		setup += "nbbbsbbnnbnn";
+		setup += "RsppnppPnnnn";
+	fillInBlocks(setup);
+	break;
+	}// end case 60
+
+	case 61:
+	{
+		setup  = "bbrrrdllbbrr";
+		setup += "bblllnllbbrr";
+		setup += "rrrrrnllbbrr";
+		setup += "lllllnllbbrr";
+		setup += "rrrrrnllbbrr";
+		setup += "dnnnnvnnndBR";
+		setup += "llrllnllllll";
+		setup += "llrllnllrrll";
+		setup += "rrrrrnllrrll";
+		setup += "llrllnllrrll";
+		setup += "llrllnllllll";
+		setup += "dnnnnsnnnnnn";
+	fillInBlocks(setup);
+	break;
+	}// end case 61
+
+	case 62:
+	{
+		setup  = "kkSRSpvSWngS";
+		setup += "kkSnbSnGSnSB";
+		setup += "kkSnSnLSnnsr";
+		setup += "kkSnsnSnLSsn";
+		setup += "nSSnsnsnSPsn";
+		setup += "nSnnsnsnswsn";
+		setup += "nsLSSLSLSLSL";
+		setup += "nnnnnnnnnnnn";
+		setup += "nnnnnnnnnnnn";
+		setup += "nSSSSSSSSSSS";
+		setup += "nnnnnnnnnnnn";
+		setup += "nnnnnnnnvdOn";
+	fillInBlocks(setup);
+	break;
+	}// end case 62
+
+	case 63:
+	{
+		setup  = "gpwObgpwrbnl";
+		setup += "sgpwrbspwknd";
+		setup += "rbSpwrbgpwnl";
+		setup += "vrsgpwRbGpnd";
+		setup += "pwrbgpwrbgnl";
+		setup += "gpwSbgpwrbnd";
+		setup += "bspWrbgswrnl";
+		setup += "rbgpwrbgpwnd";
+		setup += "wrbgpwrBgpnl";
+		setup += "Lwkbgpwrbgnd";
+		setup += "gLwrbgpwrbnl";
+		setup += "Pnnnnnnnnnnn";
+	fillInBlocks(setup);
+	break;
+	}// end case 63
+
+	case 64:
+	{
+		setup  = "SPnnnGSRnnnB";
+		setup += "SnnnnnSnnnnn";
+		setup += "SnnnnnSnnnnn";
+		setup += "SnPSGnSnRSBn";
+		setup += "SnnSnnSnnSnn";
+		setup += "SnnSnnSnnSnn";
+		setup += "SPnSnGSRnSnB";
+		setup += "SSnSnnSnnSnn";
+		setup += "nnnSnnsnnSnn";
+		setup += "nnnSGnSnRSBn";
+		setup += "lnnSnnnnnnrn";
+		setup += "dlnSnnnnnSnn";
+	fillInBlocks(setup);
+	break;
+	}// end case 64
+
+	case 65:
+	{
+		setup  = "dbbdlllvllll";
+		setup += "bdbbllllllll";
+		setup += "bbdbnrrsrrrR";
+		setup += "dbbdnrrrrrrr";
+		setup += "bdbbllllvlll";
+		setup += "bbdbllllllll";
+		setup += "rrrrrrrrsrrn";
+		setup += "rrrrrrrrrrrn";
+		setup += "lllvllllllll";
+		setup += "llllllllllll";
+		setup += "rrrsrrrrrnrn";
+		setup += "rrrrrrrrrrBn";
+	fillInBlocks(setup);
+	break;
+	}// end case 65
+
+	case 66:
+	{
+		setup  = "pppprrrrbbbb";
+		setup += "ppprrrrrrbbb";
+		setup += "ppprrssrrbbb";
+		setup += "ppsrrnnrrsbb";
+		setup += "pprrvnnvrrbb";
+		setup += "pprrnnnnrrbb";
+		setup += "psrrrrrrrrsb";
+		setup += "prrrrrrrrrrb";
+		setup += "prrBnnnnPrrb";
+		setup += "prrnnnnnnrrb";
+		setup += "rrnnnnnnnnrR";
+		setup += "rrnnnddnnnrn";
+	fillInBlocks(setup);
+	break;
+	}// end case 66
+
+	case 67:
+	{
+		setup  = "sssssssdssss";
+		setup += "sSsbsssnssss";
+		setup += "snnnsssnssss";
+		setup += "snnnssSnsssS";
+		setup += "snnBsnnnnsnn";
+		setup += "snnssnnnnnnn";
+		setup += "nnnSnnnnnnnn";
+		setup += "nnnnnnsnnnnn";
+		setup += "nnnnnssdsSnn";
+		setup += "nnnnnSssssnn";
+		setup += "bbbSnlsSSSnn";
+		setup += "ssssblslnnnn";
+	fillInBlocks(setup);
+	break;
+	}// end case 67
+
+	case 68:
+	{
+		setup  = "ssssssssssss";
+		setup += "dnSnnnngsnnn";
+		setup += "nnGndnSnnnnn";
+		setup += "nnnnnRnnnnSn";
+		setup += "nsnsnnnSnnnn";
+		setup += "nnnnnnnnnnnn";
+		setup += "snnnnsnnnnnn";
+		setup += "nnnnnnnnsnnn";
+		setup += "rnnnnnnnnnnn";
+		setup += "nnnnnnnnnnnn";
+		setup += "ndnnnnnsnnnn";
+		setup += "snsnnlnnnsnn";
+	fillInBlocks(setup);
+	break;
+	}// end case 68
+
+	case 69:
+	{
+		setup  = "vpbbSddSrrgv";
+		setup += "pvbbSddSrrvg";
+		setup += "vpbbSLLSrrgv";
+		setup += "pvbbnnnnrrvg";
+		setup += "vpbnnnnnnrgv";
+		setup += "bbbRSnnSBrrr";
+		setup += "bbbSPnnGSrrr";
+		setup += "bbSnnnnnnSrr";
+		setup += "kSnnnslnnnSk";
+		setup += "SnnnnlsnnnnS";
+		setup += "nnnnnslnnnnn";
+		setup += "Onnnnlsnnnnn";
+	fillInBlocks(setup);
+	break;
+	}// end case 69
+
+	case 70:
+	{
+		setup  = "kllnnnnnLnnd";
+		setup += "nllSSSvSSdnn";
+		setup += "nnsSnnnnsSdn";
+		setup += "nnsSnnnnsSdn";
+		setup += "nnnsnnsnnsSd";
+		setup += "nnnslnsnnsSd";
+		setup += "nsnnsnSsnnsS";
+		setup += "nsnnslnsnnsS";
+		setup += "nSsnnsnlsnns";
+		setup += "nrsnnRnnsnns";
+		setup += "nrSsnnnnnsnn";
+		setup += "nrOsnnnnnsnn";
+	fillInBlocks(setup);
+	break;
+	}// end case 70
+
 	default:
 	{
 		setup  = "nnnnnnnnnnnn";
@@ -1170,9 +1896,9 @@ void Field::setLevel()
 	}// end default
 
 
+
 	}//end switch
 
-	 return;
 }//end setLevel()
 
 /*setLevelNAME**************************************************************/
@@ -1210,6 +1936,46 @@ void Field::setLevelName()
   case 28: levelName = "Maze"; break;
   case 29: levelName = "Nooks"; break;
   case 30: levelName = "Death Alley"; break;
+  case 31: levelName = "More Diamonds Welcome"; break;
+  case 32: levelName = "Easy Street"; break;
+  case 33: levelName = "Blue Birds"; break;
+  case 34: levelName = "Zoom!"; break;
+  case 35: levelName = "Amazing Grapes"; break;
+  case 36: levelName = "Bar None"; break;
+  case 37: levelName = "Foam"; break;
+  case 38: levelName = "Three of a Kind"; break;
+  case 39: levelName = "Death Stars"; break;
+  case 40: levelName = "Fetch the Key"; break;
+  case 41: levelName = "Deyemonds"; break;
+  case 42: levelName = "Diamond Delight"; break;
+  case 43: levelName = "Spire"; break;
+  case 44: levelName = "Staircase"; break;
+  case 45: levelName = "Rhombus"; break;
+  case 46: levelName = "Tidal Wave"; break;
+  case 47: levelName = "Jump!"; break;
+  case 48: levelName = "Splatter"; break;
+  case 49: levelName = "X Marks the Spot"; break;
+  case 50: levelName = "Sparkling Passages"; break;
+  case 51: levelName = "Color Blue"; break;
+  case 52: levelName = "Upsidedown"; break;
+  case 53: levelName = "Big Vee"; break;
+  case 54: levelName = "Watch Your Step"; break;
+  case 55: levelName = "Eden"; break;
+  case 56: levelName = "Trespass"; break;
+  case 57: levelName = "Diamond in the Rough"; break;
+  case 58: levelName = "This Way..."; break;
+  case 59: levelName = "Diamaunde"; break;
+  case 60: levelName = "Lean to the Right"; break;
+  case 61: levelName = "Countries"; break;
+  case 62: levelName = "Frenzy"; break;
+  case 63: levelName = "Dime and Despair"; break;
+  case 64: levelName = "Virtual Reality"; break;
+  case 65: levelName = "America"; break;
+  case 66: levelName = "Ace"; break;
+  case 67: levelName = "Graveyard"; break;
+  case 68: levelName = "Easy as Die"; break;
+  case 69: levelName = "\"Die, Mon!\""; break;
+  case 70: levelName = "Pure Faith"; break;
   default: levelName = ""; break;
  }//end switch
  
@@ -1220,8 +1986,8 @@ void Field::moveBall()
 {
      int previousScore = score;
      ball->move();
-     if(previousScore / 5000 < score/5000 && lives < 8 )
-                        //5000pts and less than max. lives
+     if(previousScore / 5000 < score/5000 )
+                        //5000pts and less
      {
       lives++;
       #ifdef WIN32
@@ -1233,14 +1999,24 @@ void Field::moveBall()
 
 /*setToMoveLEFT*************************************************************/
 void Field::setToMoveLeft()
-{ball->moveLeftOnce();}
+{
+ if(!horizReversed)
+  ball->moveLeftOnce();
+ else
+  ball->moveRightOnce();
+}
 
 /*setToMoveRIGHT************************************************************/
 void Field::setToMoveRight()
-{ball->moveRightOnce();}
+{
+ if(!horizReversed)
+  ball->moveRightOnce();
+ else
+  ball->moveLeftOnce();
+}
 
 /*getBLOCK******************************************************************/
-Block* Field::getBlock(int y, int x)
+Block Field::getBlock(int y, int x)
 {
  if( y>=0 && y<ARRAYHEIGHT
   && x>=0 && x<ARRAYWIDTH)
@@ -1248,7 +2024,7 @@ Block* Field::getBlock(int y, int x)
 	 return blocks[y][x];
  }
  else
- {return NULL;}
+ {return NULL_BLOCK;}
 }
 
 /***************************************************************************/

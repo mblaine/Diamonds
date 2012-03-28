@@ -28,17 +28,17 @@ const int LEVELWON = 2;
 const int BALLDIED = 3;
 const int GAMEOVER = 4;
 
-const int LASTLEVEL = 30;
+const int LASTLEVEL = 70;
 
 //for window size
-const int WINWIDTH = FIELDWIDTH + 3 * HORIZINDENT ;//all in pixels
-const int WINHEIGHT = FIELDHEIGHT + 14 * VERTINDENT;
+const int WINWIDTH = FIELDWIDTH + 3 * HORIZINDENT - 3;//all in pixels
+const int WINHEIGHT = FIELDHEIGHT + 14 * VERTINDENT - 12;
 const int HORIZINDENT = 10;
 const int VERTINDENT = 10;
 
 //for readouts
 const int READOUTSWIDTH = FIELDWIDTH;
-const int READOUTSHEIGHT = 70;
+const int READOUTSHEIGHT = 61;
 
 const int LIVESWIDTH = 171;
 const int LIVESHEIGHT = 34;

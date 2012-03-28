@@ -1,6 +1,6 @@
 #include <windows.h>
 #include <dsound.h>
-#include "D2Globals.h"
+#include "D3Globals.h"
 #include "SoundBuffer.h"
 #include "dsutil.h"
 

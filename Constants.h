@@ -12,7 +12,7 @@
 
 
 //handle to the instance of the main program, necessary for making sounds
-//defined in 'Diamonds2.cpp'
+//defined in 'Diamonds3.cpp'
 #ifdef WIN32
 #include <windows.h>
 #include <mmsystem.h>
@@ -40,17 +40,6 @@ extern const int XBACKRIGHT;
 extern const int NOYCHANGE;
 extern const int YGOUP;
 extern const int YGODOWN;
-
-//messages sent inf BlockToField structure
-//can't be const variables b/c I use them as cases in a switch statement
-#define MSG_DIAMOND 10
-#define MSG_COLORCHANGEKEY 11
-#define MSG_SMALLKEY 12
-#define MSG_COLORBLOCK 13
-#define MSG_LOCK 14
-#define MSG_SOLID 15
-#define MSG_SKULL 16
-#define MSG_REVERSE 17
 
 //for game state
 extern const int PLAYING;
@@ -83,14 +72,20 @@ extern const int BONUSLIGHTWIDTH;
 extern const int BONUSLIGHTHEIGHT;
 
 
-enum color { nullColor, ltBlue, blue, red, green, brown, purple, orange};
+enum Color { nullColor, ltBlue, blue, red, green, brown, purple, orange};
+
+//to represent the various Block types
+enum Block{NULL_BLOCK, COLOR_LTBLUE,
+           COLOR_BLUE, COLOR_RED, COLOR_GREEN, COLOR_BROWN, COLOR_PURPLE,
+           BRUSH_BLUE, BRUSH_RED, BRUSH_GREEN, BRUSH_BROWN, BRUSH_PURPLE,
+           BRUSH_ORANGE, DIAMOND,  KEY, LOCK, SOLID, SKULL, REVERSE};
 
 //sent from ball to field object
 struct BallToField
 {
  int x;   //ball's x position
  int y;   //y coord
- color c; //current color
+ Color c; //current color
 };
 
 //sent from field to ball object
@@ -98,14 +93,8 @@ struct FieldToBall
 {
  int yMoveInfo;   //if ball should reverse it's vertical motion
  int xMoveInfo;   //tells whether should move horizontally or not
- color change;    //color to change to, zero if no change
+ Color change;    //color to change to, zero if no change
 };
 
-//sent from block to field object
-struct BlockToField
-{
- int msg;   //message, depends on block subclass sending this struct
- int info;  //added info, if needed
-};
 
 #endif

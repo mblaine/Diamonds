@@ -26,7 +26,7 @@ class Ball
  int xpos, ypos;
  
  //current color
- color ballColor;
+ Color ballColor;
  
  //pixel's to move per frame
  int deltaX, deltaY;
@@ -62,7 +62,7 @@ class Ball
  //get ball's y-coordinate
  inline int getYpos(){return ypos;}
  //get ball's color
- inline color getColor(){return ballColor;}
+ inline Color getColor(){return ballColor;}
  
  //set ball's vertical motion to up
  void setDYup();

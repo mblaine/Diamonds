@@ -3,7 +3,7 @@
 
 #include <windows.h>
 #include <dsound.h>
-#include "D2Globals.h"
+#include "D3Globals.h"
 #include "dsutil.h"
 
 // makes use of code from David McCabe :

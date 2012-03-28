@@ -1,7 +1,7 @@
 [Project]
-FileName=Diamonds2.dev
-Name=Diamonds2
-UnitCount=20
+FileName=Diamonds3.dev
+Name=Diamonds3
+UnitCount=19
 Type=0
 Ver=1
 ObjFiles=
@@ -12,7 +12,7 @@ ResourceIncludes=
 MakeIncludes=
 Compiler=
 CppCompiler=
-Linker=../../../../../../Dev-Cpp/lib/libwinmm.a_@@_../../../../../../Dev-Cpp/lib/libkernel32.a_@@_../../../../../../Dev-Cpp/lib/libuser32.a_@@_../../../../../../Dev-Cpp/lib/libddraw.a_@@_../../../../../../Dev-Cpp/lib/libgdi32.a_@@_../../../../../../Dev-Cpp/lib/libdxguid.a_@@_../../../../../../Dev-Cpp/lib/libdsound.a_@@_
+Linker=../../../../../../Dev-Cpp/lib/libwinmm.a_@@_../../../../../../Dev-Cpp/lib/libkernel32.a_@@_../../../../../../Dev-Cpp/lib/libuser32.a_@@_../../../../../../Dev-Cpp/lib/libddraw.a_@@_../../../../../../Dev-Cpp/lib/libgdi32.a_@@_../../../../../../Dev-Cpp/lib/libdxguid.a_@@_../../../../../../Dev-Cpp/lib/libdsound.a_@@_../../../../../../Dev-Cpp/lib/libcomctl32.a_@@_
 IsCpp=1
 Icon=
 ExeOutput=
@@ -27,7 +27,7 @@ CustomMakefile=
 IncludeVersionInfo=1
 SupportXPThemes=1
 CompilerSet=0
-CompilerSettings=0010000001001000000000
+CompilerSettings=0010000001001000000100
 
 [Unit2]
 FileName=Constants.cpp
@@ -59,45 +59,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit5]
-FileName=Block.h
-CompileCpp=1
-Folder=Primary
-Compile=1
-Link=1
-Priority=1000
-OverrideBuildCmd=0
-BuildCmd=
-
 [Unit6]
-FileName=Resource_Diamonds.h
-CompileCpp=1
-Folder=Support/Resource
-Compile=1
-Link=1
-Priority=1000
-OverrideBuildCmd=0
-BuildCmd=
-
-[VersionInfo]
-Major=2
-Minor=0
-Release=0
-Build=0
-LanguageID=1033
-CharsetID=1252
-CompanyName=M.J.B.
-FileVersion=
-FileDescription=Diamonds v2
-InternalName=
-LegalCopyright=
-LegalTrademarks=
-OriginalFilename=
-ProductName=
-ProductVersion=
-AutoIncBuildNr=0
-
-[Unit7]
 FileName=Resource_Diamonds.rc
 CompileCpp=1
 Folder=Support/Resource
@@ -107,9 +69,37 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit8]
+[VersionInfo]
+Major=3
+Minor=0
+Release=0
+Build=0
+LanguageID=1033
+CharsetID=1252
+CompanyName=M.J.B.
+FileVersion=
+FileDescription=Diamonds v3
+InternalName=
+LegalCopyright=
+LegalTrademarks=
+OriginalFilename=
+ProductName=
+ProductVersion=
+AutoIncBuildNr=0
+
+[Unit7]
 FileName=HiScore.h
+CompileCpp=1
 Folder=Primary
+Compile=1
+Link=1
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
+[Unit8]
+FileName=Ball.cpp
+Folder=Primary/Primary defs
 Compile=1
 Link=1
 Priority=1000
@@ -118,9 +108,9 @@ BuildCmd=
 CompileCpp=1
 
 [Unit10]
-FileName=Field.cpp
+FileName=D3FuncDefs.cpp
 CompileCpp=1
-Folder=Primary/Primary defs
+Folder=
 Compile=1
 Link=1
 Priority=1000
@@ -128,7 +118,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit11]
-FileName=Diamonds2.cpp
+FileName=D3Globals.h
 CompileCpp=1
 Folder=
 Compile=1
@@ -138,9 +128,9 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit12]
-FileName=D2FuncDefs.cpp
+FileName=HiScore.cpp
 CompileCpp=1
-Folder=
+Folder=Primary/Primary defs
 Compile=1
 Link=1
 Priority=1000
@@ -148,7 +138,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit9]
-FileName=Ball.cpp
+FileName=Field.cpp
 CompileCpp=1
 Folder=Primary/Primary defs
 Compile=1
@@ -168,26 +158,6 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit13]
-FileName=D2Globals.h
-CompileCpp=1
-Folder=
-Compile=1
-Link=1
-Priority=1000
-OverrideBuildCmd=0
-BuildCmd=
-
-[Unit14]
-FileName=HiScore.cpp
-CompileCpp=1
-Folder=Primary/Primary defs
-Compile=1
-Link=1
-Priority=1000
-OverrideBuildCmd=0
-BuildCmd=
-
-[Unit15]
 FileName=Surface.h
 CompileCpp=1
 Folder=Support/Surface
@@ -197,7 +167,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit16]
+[Unit14]
 FileName=Surface.cpp
 CompileCpp=1
 Folder=Support/Surface
@@ -207,7 +177,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit17]
+[Unit15]
 FileName=SoundBuffer.h
 CompileCpp=1
 Folder=Support/SoundBuffer
@@ -217,7 +187,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit18]
+[Unit16]
 FileName=SoundBuffer.cpp
 CompileCpp=1
 Folder=Support/SoundBuffer
@@ -227,7 +197,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit19]
+[Unit17]
 FileName=dsutil.h
 CompileCpp=1
 Folder=Support/SoundBuffer/Helper functions
@@ -237,10 +207,40 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit20]
+[Unit18]
 FileName=dsutil.cpp
 CompileCpp=1
 Folder=Support/SoundBuffer/Helper functions
+Compile=1
+Link=1
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
+[Unit19]
+FileName=Diamonds3.cpp
+CompileCpp=1
+Folder=Diamonds2
+Compile=1
+Link=1
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
+[Unit20]
+FileName=Diamonds3.cpp
+CompileCpp=1
+Folder=Diamonds2
+Compile=1
+Link=1
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
+[Unit5]
+FileName=Resource_Diamonds.h
+CompileCpp=1
+Folder=Support/Resource
 Compile=1
 Link=1
 Priority=1000
