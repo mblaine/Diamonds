@@ -5,6 +5,8 @@
 #include "SDL_image.h"
 #include "SDL_ttf.h"
 
+//just a few stand-alone functions for making life a little easier
+
 SDL_Color SDL_RGB(int r, int g, int b);
 
 SDL_Surface* LoadSurface(const char* filename);

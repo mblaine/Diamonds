@@ -1,13 +1,13 @@
 /* THIS FILE WILL BE OVERWRITTEN BY DEV-C++ */
 /* DO NOT EDIT ! */
 
-#ifndef DIAMONDS_PRIVATE_H
-#define DIAMONDS_PRIVATE_H
+#ifndef EDITOR_PRIVATE_H
+#define EDITOR_PRIVATE_H
 
 /* VERSION DEFINITIONS */
 #define VER_STRING	"0.5.0.0"
 #define VER_MAJOR	0
-#define VER_MINOR	4
+#define VER_MINOR	5
 #define VER_RELEASE	0
 #define VER_BUILD	0
 #define COMPANY_NAME	""
@@ -20,4 +20,4 @@
 #define PRODUCT_NAME	""
 #define PRODUCT_VERSION	""
 
-#endif /*DIAMONDS_PRIVATE_H*/
+#endif /*EDITOR_PRIVATE_H*/

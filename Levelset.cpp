@@ -4,6 +4,7 @@
 #include <sstream>
 
 #include "Levelset.h"
+#include "Constants.h"
 
 using namespace std;
 
@@ -32,12 +33,13 @@ Levelset::Levelset()
 {
 }
 
-Levelset::Levelset(string filename)
+Levelset::Levelset(const string& filename)
 {
+   this->filename = filename;
    ParseFile(filename);
 }
 
-void Levelset::ParseFile(string filename)
+void Levelset::ParseFile(const string& filename)
 {
    Level level;
    string line;
@@ -46,7 +48,7 @@ void Levelset::ParseFile(string filename)
    levels.clear();
    
    name = filename;
-   Replace(name, "data/", ""); //remove path
+   Replace(name, SETTINGSDIR, ""); //remove path
    Replace(name, ".txt", "");  //remove extension
    Replace(name, "_", " ");    //change _ to spaces
 
@@ -108,10 +110,14 @@ int Levelset::GetLevelCount()
 
 Level Levelset::GetLevel(unsigned int levelNumber)
 {
-   if(levelNumber <= levels.size())
+   if(levelNumber <= levels.size() && levelNumber > 0)
      return levels[levelNumber-1];
    else
-     return Level();
+   {
+     Level level;
+     level.data = LEVELERROR;
+     return level;
+   }
 }
 
 string Levelset::GetSetName()

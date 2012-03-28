@@ -7,6 +7,8 @@
 
 using namespace::std;
 
+//For persisting high scores
+
 struct score
 {
    string name;

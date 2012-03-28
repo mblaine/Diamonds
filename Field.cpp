@@ -8,6 +8,27 @@ Levelset Field::levels;
 Field::Field()
 {
    levelNumber = 1;
+   practiceMode = false;
+   lives = 6;
+   score = 0;
+   lastBlockHit = NULL_BLOCK;
+   oneUpLastMove = false;
+
+   timeBonus = 46;
+   setLevel();
+
+   ball = new Ball();   
+
+   gameState = PLAYING;
+   hasKey = false;
+   horizReversed = false;
+}
+
+Field::Field(int levelNumber)
+{
+   this->levelNumber = levelNumber;
+   practiceMode = true;
+   
    lives = 6;
    score = 0;
    lastBlockHit = NULL_BLOCK;
@@ -56,7 +77,11 @@ int Field::currentLevelNumber()
 
 void Field::nextLevel()
 {
-  levelNumber++;
+  if(!practiceMode)
+    levelNumber++;
+  else
+    score = 0;
+
   lastBlockHit = NULL_BLOCK;
 
   timeBonus = 46;
@@ -321,6 +346,9 @@ void Field::moveBall(MoveDirection direction)
      case BRUSH_BROWN:
      case BRUSH_PURPLE:
      case BRUSH_ORANGE:
+     case BRUSH_YELLOW:
+     case BRUSH_BLACK:
+     case BRUSH_WHITE:
           //convert from Block to Color enum
           if(ball->color != (Color)blocks[cellY][cellX]-BRUSH_BLUE+2)
             ball->color = (Color)(blocks[cellY][cellX]-BRUSH_BLUE+2);
@@ -334,6 +362,10 @@ void Field::moveBall(MoveDirection direction)
      case COLOR_GREEN:
      case COLOR_BROWN:
      case COLOR_PURPLE:
+     case COLOR_ORANGE:
+     case COLOR_YELLOW:
+     case COLOR_BLACK:
+     case COLOR_WHITE:
           //if colors match    (convert from BLock to Color enum)
           if(ball->color == (Color)blocks[cellY][cellX]-COLOR_LTBLUE+1)
           {
@@ -419,12 +451,14 @@ int Field::getLives()
 
 void Field::incLives()
 {
-   lives++;
+   if(!practiceMode)
+     lives++;
 }
 
 void Field::decLives()
 {
-   lives--;
+   if(!practiceMode)
+     lives--;
 }
 
 int Field::getScore()
@@ -457,6 +491,11 @@ bool Field::getHasKey()
    return hasKey;
 }
 
+bool Field::getPracticeMode()
+{
+   return practiceMode;
+}
+
 void Field::setLevel()
 { 
 	diamondBlocks = 0;
@@ -466,8 +505,10 @@ void Field::setLevel()
    string input = current.data;
 	
    /*
-    * l(ight blue), b(lue), r(ed), g(reen), (bro)w(n), p(urple) = color blocks
-    * B(lue), R(ed), G(reen), (bro)W(n), P(urple), O(range) = color brushes
+    * l(ight blue), b(lue), r(ed), g(reen), (bro)w(n), p(urple),
+    *   o(range), y(ellow), (blac)k, (w)h(ite)      =  color blocks
+    * B(lue), R(ed), G(reen), (bro)W(n), P(urple), O(range), Y(ellow),
+    *      (blac)K, (w)H(ite)                         =  color brushes
     * d(iamond), s(kull), k(ey), L(ock), S(olid), (re)v(erse), n(ull)
     */
 
@@ -512,6 +553,26 @@ void Field::setLevel()
          blocks[y][x] = COLOR_PURPLE;
          colorBlocks++;
          break;
+         
+         case 'o':
+         blocks[y][x] = COLOR_ORANGE;
+         colorBlocks++;
+         break;
+         
+         case 'y':
+         blocks[y][x] = COLOR_YELLOW;
+         colorBlocks++;
+         break;
+         
+         case 'c':
+         blocks[y][x] = COLOR_BLACK;
+         colorBlocks++;
+         break;
+         
+         case 'h':
+         blocks[y][x] = COLOR_WHITE;
+         colorBlocks++;
+         break;
                
          //brush blocks
          case 'B':
@@ -538,7 +599,18 @@ void Field::setLevel()
          blocks[y][x] = BRUSH_ORANGE;
          break;
          
+         case 'Y':
+         blocks[y][x] = BRUSH_YELLOW;
+         break;
          
+         case 'C':
+         blocks[y][x] = BRUSH_BLACK;
+         break;
+         
+         case 'H':
+         blocks[y][x] = BRUSH_WHITE;
+         break;
+                  
          //the rest
          case 'd':
          blocks[y][x] = DIAMOND;

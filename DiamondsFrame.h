@@ -48,6 +48,8 @@ class DiamondsFrame : public wxFrame
       void OnPause(wxCommandEvent&);
       void OnRestartLevel(wxCommandEvent&);
       void OnQuitGame(wxCommandEvent&);
+      void OnPractice(wxCommandEvent&);
+      void OnLaunchEditor(wxCommandEvent&);
       void OnSoundToggle(wxCommandEvent&);
       void OnClearScores(wxCommandEvent&);
       void OnExit(wxCommandEvent&);
@@ -68,6 +70,8 @@ enum
    GAME_PAUSE,
    GAME_RESTARTLEVEL,
    GAME_QUITGAME,
+   GAME_PRACTICE,
+   GAME_LAUNCHEDITOR,
    GAME_SOUNDTOGGLE,
    GAME_CLEARSCORES,
    GAME_EXIT,

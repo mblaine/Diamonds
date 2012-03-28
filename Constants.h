@@ -1,6 +1,16 @@
 #ifndef _CONSTANTS_H
 #define _CONSTANTS_H
 
+//uncomment to build for packaging as a Portable App
+//#define PORTABLE
+
+#ifdef PORTABLE
+#define SETTINGSDIR "../../Data/settings/"
+#else
+#define SETTINGSDIR "./settings/"
+#endif
+#define settingsDir(x) SETTINGSDIR x
+
 #define ARRAYWIDTH 12
 #define ARRAYHEIGHT 12
 
@@ -55,12 +65,14 @@ enum MoveDirection {NONE, LEFT, RIGHT};
 enum GameState{PLAYING, LEVELWON, BALLDIED, GAMEOVER};
 
 //for the ball's current color
-enum Color { nullColor, ltBlue, blue, red, green, brown, purple, orange};
+enum Color { nullColor, ltBlue, blue, red, green, brown, purple, orange, yellow, black, white};
 
 enum Block{NULL_BLOCK, COLOR_LTBLUE,
            COLOR_BLUE, COLOR_RED, COLOR_GREEN, COLOR_BROWN, COLOR_PURPLE,
+           COLOR_ORANGE, COLOR_YELLOW, COLOR_BLACK, COLOR_WHITE,
            BRUSH_BLUE, BRUSH_RED, BRUSH_GREEN, BRUSH_BROWN, BRUSH_PURPLE,
-           BRUSH_ORANGE, DIAMOND,  KEY, LOCK, SOLID, SKULL, REVERSE};
+           BRUSH_ORANGE, BRUSH_YELLOW, BRUSH_BLACK, BRUSH_WHITE,
+           DIAMOND, KEY, LOCK, SOLID, SKULL, REVERSE};
 
 
 #endif

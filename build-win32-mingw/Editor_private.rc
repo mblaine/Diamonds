@@ -4,14 +4,14 @@
 #include <windows.h> // include for version info constants
 
 
-A ICON MOVEABLE PURE LOADONCALL DISCARDABLE "../../data/diamonds.ico"
+A ICON MOVEABLE PURE LOADONCALL DISCARDABLE "../../data/editor.ico"
 
 //
 // SUPPORT FOR WINDOWS XP THEMES:
 // THIS WILL MAKE THE PROGRAM USE THE COMMON CONTROLS
 // LIBRARY VERSION 6.0 (IF IT IS AVAILABLE)
 //
-1 24 "diamonds.exe.Manifest"
+1 24 "editor.exe.Manifest"
 
 //
 // TO CHANGE VERSION INFORMATION, EDIT PROJECT OPTIONS...

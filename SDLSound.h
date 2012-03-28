@@ -6,6 +6,10 @@
 
 #include "Field.h"
 
+//Class in charge of sound effects for Diamonds;
+//SDLSound::DoSoundEffects works based on Field::oneUpLastMove,
+//Ball::hitWallLastMove, and Field::lastBlockHit
+
 class SDLSound
 {
    private:          

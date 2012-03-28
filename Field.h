@@ -8,7 +8,8 @@
 
 using namespace std;
 
-//handles most of the intelligence for a game of Diamonds
+//handles most of the intelligence for a game of Diamonds;
+//see Field::moveBall
 class Field
 {
    private:
@@ -28,6 +29,8 @@ class Field
       bool hasKey;
       bool horizReversed;
       
+      bool practiceMode;
+      
       //how many diamond blocks are left (0 == level over)
       int diamondBlocks;
       
@@ -43,6 +46,7 @@ class Field
                   
    public:
       Field();
+      Field(int levelNumber); //starts practice mode
       ~Field();
       
       //static functions for handling a levelset loaded from a text file
@@ -80,6 +84,8 @@ class Field
             
       bool getHorizReversed();
       bool getHasKey();
+      
+      bool getPracticeMode();
  
    private:
       //sets up blocks for a level

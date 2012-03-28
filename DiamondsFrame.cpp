@@ -3,6 +3,7 @@
 #ifndef WX_PRECOMP
    #include <wx/wx.h>
    #include <wx/dir.h>
+   #include <wx/numdlg.h>
 #endif
 
 #include "SDL_util.h"
@@ -22,6 +23,8 @@ BEGIN_EVENT_TABLE(DiamondsFrame, wxFrame)
    EVT_MENU(GAME_PAUSE, DiamondsFrame::OnPause)
    EVT_MENU(GAME_RESTARTLEVEL, DiamondsFrame::OnRestartLevel)
    EVT_MENU(GAME_QUITGAME, DiamondsFrame::OnQuitGame)
+   EVT_MENU(GAME_PRACTICE, DiamondsFrame::OnPractice)
+   EVT_MENU(GAME_LAUNCHEDITOR, DiamondsFrame::OnLaunchEditor)
    EVT_MENU(GAME_SOUNDTOGGLE, DiamondsFrame::OnSoundToggle)
    EVT_MENU(GAME_CLEARSCORES, DiamondsFrame::OnClearScores)
    EVT_MENU(GAME_EXIT, DiamondsFrame::OnExit)
@@ -36,7 +39,7 @@ DiamondsFrame::DiamondsFrame() : wxFrame()
            wxMINIMIZE_BOX | wxCLOSE_BOX);
    
    IsOpen = true;
-   settings = new Settings(wxT("data/settings.ini"));
+   settings = new Settings(settingsDir("diamonds.ini"));
               
    //menu structure                                                                               
    menuBar = new wxMenuBar();
@@ -48,6 +51,9 @@ DiamondsFrame::DiamondsFrame() : wxFrame()
    gameMenu->Append(GAME_PAUSE, wxT("&Pause\tP"));
    gameMenu->Append(GAME_RESTARTLEVEL, wxT("&Restart level\tR"));
    gameMenu->Append(GAME_QUITGAME, wxT("&Quit game\tQ"));
+   gameMenu->AppendSeparator();
+   gameMenu->Append(GAME_PRACTICE, wxT("Pr&actice"));
+   gameMenu->Append(GAME_LAUNCHEDITOR, wxT("Launch &editor"));
    gameMenu->AppendSeparator();
    gameMenu->AppendCheckItem(GAME_SOUNDTOGGLE, wxT("&Sound"))->Check(settings->soundon);
    gameMenu->Append(GAME_CLEARSCORES, wxT("&Clear scores"));
@@ -75,10 +81,10 @@ DiamondsFrame::DiamondsFrame() : wxFrame()
    icons.AddIcon(wxT("data/diamonds.xpm"), wxBITMAP_TYPE_XPM);
    SetIcons(icons);
    #endif
-   
+
    //read in or create new high scores file
    scores = new HiScore();
-   ifstream infile(wxT("data/scores.dat"), ios::in | ios::binary);
+   ifstream infile(settingsDir("scores.dat"), ios::in | ios::binary);
    if(infile.is_open())
      scores->deserialize(infile);
    infile.close();
@@ -96,7 +102,7 @@ DiamondsFrame::DiamondsFrame() : wxFrame()
    gameOn = false;
    paused = false;
 
-   Field::loadLevelset(wxString::Format(wxT("data/%s"),settings->levelset.c_str()).c_str());
+   Field::loadLevelset(wxString::Format(settingsDir("%s"),settings->levelset.c_str()).c_str());
 
    Centre();
    Show(true);
@@ -114,7 +120,7 @@ void DiamondsFrame::OnClose(wxCloseEvent&)
      delete field;
 
    //save high scores
-   ofstream outfile(wxT("data/scores.dat"), ios::out|ios::binary);
+   ofstream outfile(settingsDir("scores.dat"), ios::out|ios::binary);
    if(outfile.is_open())
      scores->serialize(outfile);
    outfile.close();
@@ -330,6 +336,36 @@ void DiamondsFrame::OnQuitGame(wxCommandEvent&)
    menuBar->EnableTop(1, true);
 }
 
+void DiamondsFrame::OnPractice(wxCommandEvent&)
+{
+   int level;     
+   level = wxGetNumberFromUser(wxT("Which level would you like to practice?"),
+           wxString::Format(wxT("Level (1-%d):"),Field::levelCount()),
+           "Diamonds Practice", 1, 1, Field::levelCount(), this);
+   if(level == -1)
+     return;
+    
+   mainTimer->Stop();
+   bonusTimer->Stop();
+   
+   menuBar->EnableTop(1, false);
+   
+   if(field)
+     delete field;
+   field = new Field(level);
+   
+   gameOn = true;
+   panel->Repaint();
+   
+   mainTimer->Start(MAIN_INTERVAL);
+   bonusTimer->Start(BONUS_INTERVAL);
+}
+
+void DiamondsFrame::OnLaunchEditor(wxCommandEvent&)
+{
+  
+}
+
 void DiamondsFrame::OnSoundToggle(wxCommandEvent& event)
 {
    sound->SoundOn = event.IsChecked();
@@ -360,7 +396,7 @@ void DiamondsFrame::OnLevelset(wxCommandEvent& event)
      return;
 
    settings->levelset = levelFiles[event.GetId()-LEVELSET];
-   Field::loadLevelset(wxString::Format(wxT("data/%s"),settings->levelset.c_str()).c_str());
+   Field::loadLevelset(wxString::Format(settingsDir("%s"),settings->levelset.c_str()).c_str());
 }
 
 void DiamondsFrame::OnHowToPlay(wxCommandEvent&)
@@ -401,7 +437,7 @@ void DiamondsFrame::OnAbout(wxCommandEvent&)
 
    wxDialog dialog(this, wxID_ANY, wxT("About Diamonds"), wxDefaultPosition, wxDefaultSize);
    wxPanel panel(&dialog, wxID_ANY);
-   wxStaticBox box(&panel, wxID_ANY, wxT("Diamonds 0.4"), wxPoint(5, 5), wxSize(350, 175));
+   wxStaticBox box(&panel, wxID_ANY, wxT("Diamonds 0.5"), wxPoint(5, 5), wxSize(350, 175));
    wxStaticText text(&panel, wxID_ANY,
       wxT("Diamonds is a tribute to the original game, created by Oliver "
       "Dreer and released by Varcon Systems in 1992.\n\n"
@@ -425,6 +461,12 @@ void DiamondsFrame::OnAbout(wxCommandEvent&)
 //get the player's name
 void DiamondsFrame::EnterHighScore()
 {
+   if(field->getPracticeMode())
+   {
+     wxMilliSleep(1000);
+     return;
+   }
+     
    wxString name = wxGetTextFromUser("You got a high score! "
                     "Enter your name below.", "Congratulations!", "", this,
                     wxDefaultCoord, wxDefaultCoord, true);
@@ -445,7 +487,7 @@ void DiamondsFrame::EnterHighScore()
 
 void DiamondsFrame::BuildLevelsetMenu(wxMenu* menu)
 {
-   wxDir dir(wxT("./data"));
+   wxDir dir(SETTINGSDIR);
     
    wxString filename;
    bool more = dir.GetFirst(&filename, wxT("*.txt"), wxDIR_FILES);

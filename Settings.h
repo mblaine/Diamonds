@@ -3,6 +3,8 @@
 
 #include <wx/fileconf.h>
 
+//For persisting settings
+
 class Settings
 {
    private:

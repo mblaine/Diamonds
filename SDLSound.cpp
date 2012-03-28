@@ -89,6 +89,9 @@ void SDLSound::DoSoundEffects(Field* field)
      case BRUSH_BROWN:
      case BRUSH_PURPLE:
      case BRUSH_ORANGE:
+     case BRUSH_YELLOW:
+     case BRUSH_BLACK:
+     case BRUSH_WHITE:
           Mix_PlayChannel(-1, colorChangeSound, 0);
           break;
      case COLOR_LTBLUE:
@@ -97,6 +100,10 @@ void SDLSound::DoSoundEffects(Field* field)
      case COLOR_GREEN:
      case COLOR_BROWN:
      case COLOR_PURPLE:
+     case COLOR_ORANGE:
+     case COLOR_YELLOW:
+     case COLOR_BLACK:
+     case COLOR_WHITE:
           Mix_PlayChannel(-1, colorBlockSound, 0);
           break;
      case KEY:

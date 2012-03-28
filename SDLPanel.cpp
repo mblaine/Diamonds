@@ -55,6 +55,9 @@ SDLPanel::SDLPanel(wxWindow *parent) : wxPanel(parent, wxID_ANY)
    borderColors[4] = SDL_RGB(146,91,0); //brown
    borderColors[5] = SDL_RGB(204,0,204);//purple
    borderColors[6] = SDL_RGB(255,153,0);//orange
+   borderColors[7] = SDL_RGB(255,255,0);//yellow
+   borderColors[8] = SDL_RGB(20,20,20);//black
+   borderColors[9] = SDL_RGB(255,255,255);//white
                               
    ballSurface = LoadSurface(wxT("data/ball.png"));
    blockSurface = LoadSurface(wxT("data/block.png"));

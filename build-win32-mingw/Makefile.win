@@ -1,66 +1,48 @@
-# Project: Diamonds
+# Project: Editor
 # Makefile created by Dev-C++ 4.9.9.2
 
 CPP  = g++.exe
 CC   = gcc.exe
 WINDRES = windres.exe
-RES  = Diamonds_private.res
-OBJ  = DiamondsApp.o Constants.o SDLPanel.o SDL_util.o Ball.o Field.o HiScore.o Globals.o DiamondsFrame.o SDLSound.o Levelset.o Settings.o $(RES)
-LINKOBJ  = DiamondsApp.o Constants.o SDLPanel.o SDL_util.o Ball.o Field.o HiScore.o Globals.o DiamondsFrame.o SDLSound.o Levelset.o Settings.o $(RES)
-LIBS =  -L"lib" -mwindows -lmingw32 -lSDLmain -lSDL -lSDL_image -lSDL_mixer -lSDL_ttf -lwxmsw28_core -lwxbase28 -lcomdlg32 -luser32 -lgdi32 -lole32 -lwsock32 -lcomctl32 -lctl3d32 -lgcc -lstdc++ -lshell32 -loleaut32 -ladvapi32 -luuid  -s 
+RES  = ../obj/Editor_private.res
+OBJ  = ../obj/Levelset.o ../obj/Settings.o ../obj/Constants.o ../obj/EditorApp.o ../obj/EditorFrame.o ../obj/SDL_util.o $(RES)
+LINKOBJ  = ../obj/Levelset.o ../obj/Settings.o ../obj/Constants.o ../obj/EditorApp.o ../obj/EditorFrame.o ../obj/SDL_util.o $(RES)
+LIBS =  -L"lib" -mwindows -lmingw32 -lSDLmain -lSDL -lSDL_image -lSDL_ttf -lwxmsw28_core -lwxbase28 -lcomdlg32 -luser32 -lgdi32 -lole32 -lwsock32 -lcomctl32 -lctl3d32 -lgcc -lstdc++ -lshell32 -loleaut32 -ladvapi32 -luuid  -s 
 INCS =  -I"include" 
 CXXINCS =  -I"C:/Dev-Cpp/include/c++/3.4.5/backward"  -I"C:/Dev-Cpp/include/c++/3.4.5/mingw32"  -I"C:/Dev-Cpp/include/c++/3.4.5"  -I"C:/Dev-cpp/include/SDL"  -I"include" 
-BIN  = diamonds.exe
+BIN  = ../../editor.exe
 CXXFLAGS = $(CXXINCS)   -Wall
 CFLAGS = $(INCS)   -Wall
 RM = rm -f
 
 .PHONY: all all-before all-after clean clean-custom
 
-all: all-before diamonds.exe all-after
+all: all-before ../../editor.exe all-after
 
 
 clean: clean-custom
 	${RM} $(OBJ) $(BIN)
 
 $(BIN): $(OBJ)
-	$(CPP) $(LINKOBJ) -o "diamonds.exe" $(LIBS)
+	$(CPP) $(LINKOBJ) -o "..\..\editor.exe" $(LIBS)
 
-DiamondsApp.o: DiamondsApp.cpp
-	$(CPP) -c DiamondsApp.cpp -o DiamondsApp.o $(CXXFLAGS)
+../obj/Levelset.o: ../Levelset.cpp
+	$(CPP) -c ../Levelset.cpp -o ../obj/Levelset.o $(CXXFLAGS)
 
-Constants.o: Constants.cpp
-	$(CPP) -c Constants.cpp -o Constants.o $(CXXFLAGS)
+../obj/Settings.o: ../Settings.cpp
+	$(CPP) -c ../Settings.cpp -o ../obj/Settings.o $(CXXFLAGS)
 
-SDLPanel.o: SDLPanel.cpp
-	$(CPP) -c SDLPanel.cpp -o SDLPanel.o $(CXXFLAGS)
+../obj/Constants.o: ../Constants.cpp
+	$(CPP) -c ../Constants.cpp -o ../obj/Constants.o $(CXXFLAGS)
 
-SDL_util.o: SDL_util.cpp
-	$(CPP) -c SDL_util.cpp -o SDL_util.o $(CXXFLAGS)
+../obj/EditorApp.o: ../EditorApp.cpp
+	$(CPP) -c ../EditorApp.cpp -o ../obj/EditorApp.o $(CXXFLAGS)
 
-Ball.o: Ball.cpp
-	$(CPP) -c Ball.cpp -o Ball.o $(CXXFLAGS)
+../obj/EditorFrame.o: ../EditorFrame.cpp
+	$(CPP) -c ../EditorFrame.cpp -o ../obj/EditorFrame.o $(CXXFLAGS)
 
-Field.o: Field.cpp
-	$(CPP) -c Field.cpp -o Field.o $(CXXFLAGS)
+../obj/SDL_util.o: ../SDL_util.cpp
+	$(CPP) -c ../SDL_util.cpp -o ../obj/SDL_util.o $(CXXFLAGS)
 
-HiScore.o: HiScore.cpp
-	$(CPP) -c HiScore.cpp -o HiScore.o $(CXXFLAGS)
-
-Globals.o: Globals.cpp
-	$(CPP) -c Globals.cpp -o Globals.o $(CXXFLAGS)
-
-DiamondsFrame.o: DiamondsFrame.cpp
-	$(CPP) -c DiamondsFrame.cpp -o DiamondsFrame.o $(CXXFLAGS)
-
-SDLSound.o: SDLSound.cpp
-	$(CPP) -c SDLSound.cpp -o SDLSound.o $(CXXFLAGS)
-
-Levelset.o: Levelset.cpp
-	$(CPP) -c Levelset.cpp -o Levelset.o $(CXXFLAGS)
-
-Settings.o: Settings.cpp
-	$(CPP) -c Settings.cpp -o Settings.o $(CXXFLAGS)
-
-Diamonds_private.res: Diamonds_private.rc 
-	$(WINDRES) -i Diamonds_private.rc --input-format=rc -o Diamonds_private.res -O coff 
+../obj/Editor_private.res: Editor_private.rc 
+	$(WINDRES) -i Editor_private.rc --input-format=rc -o ../obj/Editor_private.res -O coff 

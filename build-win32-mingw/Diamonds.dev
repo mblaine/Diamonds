@@ -14,23 +14,23 @@ Compiler=
 CppCompiler=
 Linker=-lmingw32 -lSDLmain -lSDL -lSDL_image -lSDL_mixer -lSDL_ttf -lwxmsw28_core -lwxbase28 -lcomdlg32 -luser32 -lgdi32 -lole32 -lwsock32 -lcomctl32 -lctl3d32 -lgcc -lstdc++ -lshell32 -loleaut32 -ladvapi32 -luuid_@@_
 IsCpp=1
-Icon=data/Diamonds.ico
-ExeOutput=
-ObjectOutput=
+Icon=../../data/diamonds.ico
+ExeOutput=../../
+ObjectOutput=../obj
 OverrideOutput=1
 OverrideOutputName=diamonds.exe
 HostApplication=
 Folders=
 CommandLine=
-UseCustomMakefile=0
-CustomMakefile=
+UseCustomMakefile=1
+CustomMakefile=Makefile.txt diamonds
 IncludeVersionInfo=1
 SupportXPThemes=1
 CompilerSet=0
 CompilerSettings=0000000000000000000100
 
 [Unit1]
-FileName=DiamondsApp.cpp
+FileName=../DiamondsApp.cpp
 CompileCpp=1
 Folder=
 Compile=1
@@ -40,7 +40,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit2]
-FileName=DiamondsApp.h
+FileName=../DiamondsApp.h
 CompileCpp=1
 Folder=
 Compile=1
@@ -50,7 +50,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit3]
-FileName=Constants.h
+FileName=../Constants.h
 CompileCpp=1
 Folder=
 Compile=1
@@ -60,7 +60,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit4]
-FileName=Constants.cpp
+FileName=../Constants.cpp
 CompileCpp=1
 Folder=
 Compile=1
@@ -82,13 +82,13 @@ FileDescription=
 InternalName=
 LegalCopyright=
 LegalTrademarks=
-OriginalFilename=
+OriginalFileName=../
 ProductName=
 ProductVersion=
 AutoIncBuildNr=0
 
 [Unit5]
-FileName=SDL_util.h
+FileName=../SDL_util.h
 CompileCpp=1
 Folder=
 Compile=1
@@ -98,7 +98,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit6]
-FileName=SDLPanel.h
+FileName=../SDLPanel.h
 CompileCpp=1
 Folder=
 Compile=1
@@ -108,7 +108,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit7]
-FileName=SDLPanel.cpp
+FileName=../SDLPanel.cpp
 CompileCpp=1
 Folder=
 Compile=1
@@ -118,7 +118,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit8]
-FileName=SDL_util.cpp
+FileName=../SDL_util.cpp
 CompileCpp=1
 Folder=
 Compile=1
@@ -128,7 +128,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit9]
-FileName=Ball.h
+FileName=../Ball.h
 CompileCpp=1
 Folder=
 Compile=1
@@ -138,7 +138,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit10]
-FileName=Ball.cpp
+FileName=../Ball.cpp
 CompileCpp=1
 Folder=
 Compile=1
@@ -148,7 +148,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit11]
-FileName=Field.h
+FileName=../Field.h
 CompileCpp=1
 Folder=
 Compile=1
@@ -158,7 +158,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit12]
-FileName=Field.cpp
+FileName=../Field.cpp
 CompileCpp=1
 Folder=
 Compile=1
@@ -168,7 +168,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit13]
-FileName=HiScore.cpp
+FileName=../HiScore.cpp
 CompileCpp=1
 Folder=
 Compile=1
@@ -178,7 +178,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit14]
-FileName=HiScore.h
+FileName=../HiScore.h
 CompileCpp=1
 Folder=
 Compile=1
@@ -188,7 +188,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit15]
-FileName=Globals.h
+FileName=../Globals.h
 CompileCpp=1
 Folder=
 Compile=1
@@ -198,7 +198,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit16]
-FileName=Globals.cpp
+FileName=../Globals.cpp
 CompileCpp=1
 Folder=
 Compile=1
@@ -208,7 +208,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit17]
-FileName=DiamondsFrame.h
+FileName=../DiamondsFrame.h
 CompileCpp=1
 Folder=
 Compile=1
@@ -218,7 +218,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit18]
-FileName=DiamondsFrame.cpp
+FileName=../DiamondsFrame.cpp
 CompileCpp=1
 Folder=
 Compile=1
@@ -228,7 +228,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit19]
-FileName=SDLSound.h
+FileName=../SDLSound.h
 CompileCpp=1
 Folder=
 Compile=1
@@ -238,7 +238,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit20]
-FileName=SDLSound.cpp
+FileName=../SDLSound.cpp
 CompileCpp=1
 Folder=
 Compile=1
@@ -248,7 +248,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit22]
-FileName=Levelset.cpp
+FileName=../Levelset.cpp
 CompileCpp=1
 Folder=
 Compile=1
@@ -258,7 +258,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit23]
-FileName=Settings.h
+FileName=../Settings.h
 CompileCpp=1
 Folder=
 Compile=1
@@ -268,7 +268,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit24]
-FileName=Settings.cpp
+FileName=../Settings.cpp
 CompileCpp=1
 Folder=
 Compile=1
@@ -278,7 +278,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit21]
-FileName=Levelset.h
+FileName=../Levelset.h
 CompileCpp=1
 Folder=
 Compile=1

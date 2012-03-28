@@ -1,0 +1,21 @@
+# Third levelset for Diamonds
+# Key:
+# l(ight blue), b(lue), r(ed), g(reen), (bro)w(n), p(urple),
+#      o(range), y(ellow), (bla)c(k), (w)h(ite)      =  color blocks
+# B(lue), R(ed), G(reen), (bro)W(n), P(urple), O(range), Y(ellow),
+#      (bla)C(k), (w)H(ite)                         =  color brushes
+# d(iamond), s(kull), k(ey), L(ock), S(olid), (re)v(erse), n(ull)
+
+name=Let's Go!
+ngcbopwhryln
+ngcbopwhryln
+ngcbopwhryln
+Bnnnnnnnnnnn
+Rnnnnnnnnnnn
+Gnnnnnnnnnnn
+Wnnnnnnnnnnn
+Pnnnnnnnnnnn
+Onnnnnnnnnnn
+Ynnnnnnnnnnn
+Cnnnnndnnnnn
+Hnnnndddnnnn

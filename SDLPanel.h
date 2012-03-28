@@ -15,6 +15,8 @@
 #include "SDL_ttf.h"
 #include "SDL_util.h"
 
+//Class for Diamonds' animation
+
 class SDLPanel : public wxPanel
 {
    private:
@@ -23,7 +25,7 @@ class SDLPanel : public wxPanel
       SDL_Surface* screen;
       wxSize size;
       
-      SDL_Color borderColors[7];
+      SDL_Color borderColors[10];
 
       SDL_Surface* ballSurface;
       SDL_Surface* blockSurface;
