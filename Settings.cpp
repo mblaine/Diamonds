@@ -4,7 +4,7 @@
 #include <wx/filefn.h>
 #include <wx/wfstream.h>
 
-Settings::Settings(char* filename)
+Settings::Settings(const char* filename)
 {
    this->filename = filename;
 

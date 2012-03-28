@@ -13,7 +13,7 @@ class Settings
       bool soundon;
       wxString levelset;
       
-      Settings(char* filename);
+      Settings(const char* filename);
       ~Settings();
 };
 #endif
