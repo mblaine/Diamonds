@@ -3,30 +3,31 @@
 
 #include <windows.h> // include for version info constants
 
-#include "Resource_Diamonds.rc"
+
+A ICON MOVEABLE PURE LOADONCALL DISCARDABLE "data/Diamonds.ico"
 
 //
 // SUPPORT FOR WINDOWS XP THEMES:
 // THIS WILL MAKE THE PROGRAM USE THE COMMON CONTROLS
 // LIBRARY VERSION 6.0 (IF IT IS AVAILABLE)
 //
-1 24 "Diamonds3.exe.Manifest"
+1 24 "diamonds.exe.Manifest"
 
 //
 // TO CHANGE VERSION INFORMATION, EDIT PROJECT OPTIONS...
 //
 1 VERSIONINFO
-FILEVERSION 3,0,0,0
-PRODUCTVERSION 3,0,0,0
+FILEVERSION 0,4,0,0
+PRODUCTVERSION 0,4,0,0
 FILETYPE VFT_APP
 {
   BLOCK "StringFileInfo"
 	 {
 		 BLOCK "040904E4"
 		 {
-			 VALUE "CompanyName", "M.J.B."
+			 VALUE "CompanyName", ""
 			 VALUE "FileVersion", ""
-			 VALUE "FileDescription", "Diamonds v3"
+			 VALUE "FileDescription", ""
 			 VALUE "InternalName", ""
 			 VALUE "LegalCopyright", ""
 			 VALUE "LegalTrademarks", ""

@@ -1,53 +1,46 @@
 #include "Constants.h"
-#include "Resource_Diamonds.h"
 
-const int ARRAYWIDTH = 12;//in # of blocks
-const int ARRAYHEIGHT = 12;
+const unsigned int BLOCKWIDTH = 66;//in pixels
+const unsigned int BLOCKHEIGHT = 40;
 
-const int BLOCKWIDTH = 66;//in pixels
-const int BLOCKHEIGHT = 40;
+const unsigned int FIELDWIDTH = ARRAYWIDTH * BLOCKWIDTH + 2 * BORDERWIDTH; //in pixels
+const unsigned int FIELDHEIGHT = ARRAYHEIGHT * BLOCKHEIGHT + 2 * BORDERWIDTH;
 
-const int FIELDWIDTH = ARRAYWIDTH * BLOCKWIDTH + 2 * HORIZINDENT; //in pixels
-const int FIELDHEIGHT = ARRAYHEIGHT * BLOCKHEIGHT + 2 * VERTINDENT;
-
-const int BALLWIDTH = 18;//in pixels
-const int BALLHEIGHT = 18;
-const int BALLDELTA = 7;
+const unsigned int BALLWIDTH = 20;//in pixels
+const unsigned int BALLHEIGHT = 20;
+const unsigned int BALLDELTA = 9;
+const unsigned int BALLSTARTX = 11*BLOCKWIDTH;
+const unsigned int BALLSTARTY = 11*BLOCKHEIGHT;
 
 //used w/ FieldtoBall
-const int NOXMOVE = 0;
-const int XBACKLEFT = 1;
-const int XBACKRIGHT = 2;
-const int NOYCHANGE = 3;
-const int YGOUP = 4;
-const int YGODOWN = 5;
-
-//for game state
-const int PLAYING = 1;
-const int LEVELWON = 2;
-const int BALLDIED = 3;
-const int GAMEOVER = 4;
-
-const int LASTLEVEL = 70;
+const unsigned int NOXMOVE = 0;
+const unsigned int XBACKLEFT = 1;
+const unsigned int XBACKRIGHT = 2;
+const unsigned int NOYCHANGE = 3;
+const unsigned int YGOUP = 4;
+const unsigned int YGODOWN = 5;
 
 //for window size
-const int WINWIDTH = FIELDWIDTH + 3 * HORIZINDENT - 3;//all in pixels
-const int WINHEIGHT = FIELDHEIGHT + 14 * VERTINDENT - 12;
-const int HORIZINDENT = 10;
-const int VERTINDENT = 10;
+const unsigned int WINWIDTH = FIELDWIDTH; //in pixels
+const unsigned int WINHEIGHT = FIELDHEIGHT + HUDHEIGHT;
+const unsigned int BORDERWIDTH = 10;
 
-//for readouts
-const int READOUTSWIDTH = FIELDWIDTH;
-const int READOUTSHEIGHT = 61;
+//for heads up display
+const unsigned int HUDWIDTH = FIELDWIDTH;
+const unsigned int HUDHEIGHT = 61;
 
-const int LIVESWIDTH = 171;
-const int LIVESHEIGHT = 34;
+const unsigned int LIVESWIDTH = 171;
+const unsigned int LIVESHEIGHT = 34;
 
-const int HASKEYWIDTH = 45;
-const int HASKEYHEIGHT = 29;
+const unsigned int HASKEYWIDTH = 45;
+const unsigned int HASKEYHEIGHT = 29;
 
-const int NUMWIDTH = 22;
-const int NUMHEIGHT = 26;
+const unsigned int NUMWIDTH = 22;
+const unsigned int NUMHEIGHT = 26;
 
-const int BONUSLIGHTWIDTH = 7;
-const int BONUSLIGHTHEIGHT = 12;
+const unsigned int BONUSLIGHTWIDTH = 7;
+const unsigned int BONUSLIGHTHEIGHT = 12;
+
+
+const unsigned int MAIN_INTERVAL = 26;
+const unsigned int BONUS_INTERVAL = 1250;

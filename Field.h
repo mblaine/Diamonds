@@ -1,135 +1,89 @@
-/*
- * FIELD.H
- * created by Matthew Blaine, October 2005
- *
- * This class represents an entire playing field in a game of 'Diamonds'. It
- * contains a 2D array of 'Block' enum constant values. The 'ball' object
- * calls the field's checkCollision() function. The field then causes the
- * blocks and ball to react accordingly.
- */
- 
 #ifndef _FIELD_H
 #define _FIELD_H
 
-#include <cstdlib>
 #include <string>
+#include "Ball.h"
 #include "Constants.h"
-#include "Resource_Diamonds.h"
-using namespace std;
-class Ball;
+#include "Levelset.h"
 
+using namespace std;
+
+//handles most of the intelligence for a game of Diamonds
 class Field
 {
- private:
-         
- //pointers to Block constants
- //          [y] [x]
- Block blocks[12][12];
+   private:
+ 
+      static Levelset levels;
+      Block blocks[ARRAYHEIGHT][ARRAYWIDTH];
+      Ball* ball;
 
- //keeps track of whether level won or lost
- int gameState;
- 
- //whether player has picked up a key block
- bool hasKey;
- 
- //whether horizontal motion has been reversed
- bool horizReversed;
- 
- //the point score for the game this field represents
- int score;
- 
- //level this playing field is on
- int currentLevel;
- 
- //current number of lives remaining
- int lives;
- 
- //time bonus counter
- int timeBonus;
- 
- //name of current level
- string levelName;
- 
- //how many blocks that are diamonds remain
- int diamondBlocks;
- 
- //how many normal color blocks remain
- int colorBlocks;
- 
- //pointer to a 'ball' object
- Ball* ball;
+      int lives;
+      int score;
+      int levelNumber;
 
- public:
- //default constructor
- Field();
- //destructor
- ~Field();
+      //decreases as a level is played, amount remaining adds to score
+      //when a level is completed
+      int timeBonus;
+      
+      bool hasKey;
+      bool horizReversed;
+      
+      //how many diamond blocks are left (0 == level over)
+      int diamondBlocks;
+      
+      //how many color blocks are left (0 == diamond blocks destructable)
+      int colorBlocks;
+
+   public:      
+      GameState gameState;
+                
+      //used elsewhere to determine if a sound effect should be played
+      Block lastBlockHit;
+      bool oneUpLastMove; 
+                  
+   public:
+      Field();
+      ~Field();
+      
+      //static functions for handling a levelset loaded from a text file
+      static void loadLevelset(string filename);
+      static int levelCount();
+      static string levelsetName();
+      
+      string currentLevelName();
+      int currentLevelNumber();
+
+      void nextLevel();
+      void restartLevel();
+      void resetBall();
+      
+      //for controlling the ball; most important part of the whole program
+      void moveBall(MoveDirection direction = NONE);
+     
+      //for accessing the ball
+      unsigned int getBallX();
+      unsigned int getBallY();
+      Color getBallColor();
+      bool getBallHitWallLastMove();
+      
+      Block getBlock(unsigned int y, unsigned int x);
+
+      int getLives();
+      void incLives();
+      void decLives();
+
+      int getScore();
+      void incScore(unsigned int amount);
+      
+      int getTimeBonus();
+      void decTimeBonus();
+            
+      bool getHorizReversed();
+      bool getHasKey();
  
- //the primary purpose of this class, called by a 'ball' object
- FieldToBall checkCollision(BallToField info);
- //begins next level
- void nextLevel();
- //restarts current level
- void restartLevel();
- //reset the ball
- void resetBall();
- 
- //functions for controlling the ball
- void moveBall();
- void setToMoveLeft();
- void setToMoveRight();
- 
- inline Ball* getBallPtr() {return ball;}
- 
- //get method for the Block pointer array
- Block getBlock(int y, int x);
- 
- //get 'lives'
- inline int getLives(){return lives;}
- //increments 'lives'
- inline void incLives(){lives++;}
- //decrements 'lives'
- inline void decLives() {lives--;}
- 
- //get 'timeBonus'
- inline int getTimeBonus(){return timeBonus;}
- //decrements 'timeBonus'
- inline void decTimeBonus() {timeBonus--;}
- 
- //get current level number
- inline int getCurrentLevel(){return currentLevel;}
- 
- //get current game state
- inline int getGameState(){return gameState;}
- //set current gamestate
- inline void setGameStatePlaying(){gameState = PLAYING;}
- inline void setGameStateLevelWon(){gameState = LEVELWON;}
- inline void setGameStateBallDied(){gameState = BALLDIED;}
- inline void setGameStateGameOver(){gameState = GAMEOVER;}
- 
- //get horizReversed
- inline bool getHorizReversed(){return horizReversed;}
- //get hasKey
- inline bool getHasKey(){return hasKey;}
- 
- //get name of current level
- inline string getLevelName(){return levelName;}
- 
- //get score
- inline int getScore(){return score;}
- //increase score
- inline void incScore(unsigned int amount){score+=amount;}
- 
- private:
- //sets up blocks for a level
- void setLevel();
- //called by setLevel()
- void fillInBlocks(string input);
- //sets 'levelName' based on 'currentLevel'
- void setLevelName();
- 
- 
-};//end class
-/***************************************************************************/
+   private:
+      //sets up blocks for a level
+      void setLevel();
+};
 
 #endif

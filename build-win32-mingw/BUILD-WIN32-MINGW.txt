@@ -1,0 +1,49 @@
+Building Diamonds on Windows with MinGW
+
+1. Dependencies
+
+    For each of the following, download the Windows release binary for the 
+    dll(s) that diamonds.exe will require sit along side it for it to work. 
+    Also download the development binaries for the headers Diamonds includes 
+    and the lib*.a files that will have to be linked into the  executable.
+
+       SDL       - libsdl.org/download-1.2.php
+       SDL_image - libsdl.org/projects/SDL_image/
+       SDL_mixer - libsdl.org/projects/SDL_mixer/
+       SDL_ttf   - libsdl.org/projects/SDL_ttf/
+
+    Also, download the Windows source for wxWidgets.
+
+       wxwidgets.org/downloads/
+
+    This you will have to first compile from source in and of itself. 
+    Diamonds will need access to the headers from the wxWidgets include 
+    directory and to be linked with two of the produced library files:
+    libwxbase*.a and libwxmsw*_core.a.
+
+2. Copy the contents of this directory (build-win32-mingw) one level up to
+   where the rest of Diamonds' source is.
+
+   If you use the Dev-C++ IDE (bloodshed.net) you should be able to open the  
+   included Diamonds.dev file and use it to compile Diamonds.
+
+   If not, try using the included makefile, which was automatically generated 
+   by Dev-C++.
+
+      mingw32-make -f Makefile.win
+
+   Either way, it's important g++ is able to find the necessary headers and 
+   link the right libraries, and in the right order too.
+
+   With Dev-C++ 4.9.9.2, you can click Tools -> Compiler Options, select the
+   Directories tab, and add entries to the Libraries and/or C++ Includes 
+   lists as necessary. You can also right click the name of the project at 
+   the top of the file listing in the Project Browser down the left side of 
+   the screen and click Project Options. From there, click the Parameters tab 
+   and you can edit the list of paremters to be passed to the linker. The 
+   wxWidgets libraries might not have exactly the same names as have been 
+   already specified depending on the version of wxWidgets and what options 
+   you compiled it with.
+
+   Without the IDE, you'll have to edit the LIBS and CXXINCS parameters in 
+   the makefile in a text editor manually.
