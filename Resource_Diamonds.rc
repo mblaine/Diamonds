@@ -1,0 +1,82 @@
+#include "Resource_Diamonds.h"
+
+//bitmaps
+BALL_BMP   BITMAP  DISCARDABLE     "..\\media\\ball.bmp"
+BLOCKS_BMP BITMAP  DISCARDABLE     "..\\media\\blocks.bmp"
+READOUT_BMP BITMAP DISCARDABLE     "..\\media\\readout.bmp"
+LOGO_BMP   BITMAP  DISCARDABLE     "..\\media\\logo.bmp"
+
+BACKGROUND_BMP BITMAP DISCARDABLE  "..\\media\\background.bmp"
+
+
+//sounds
+
+BOUNCESND    WAVE DISCARDABLE "..\\media\\bounce.wav"
+COLORBLKSND  WAVE DISCARDABLE "..\\media\\colorblock.wav"
+COLORKEYSND  WAVE DISCARDABLE "..\\media\\colorchange.wav"
+DIAMONDSND   WAVE DISCARDABLE "..\\media\\diamondsound.wav"
+DIESND       WAVE DISCARDABLE "..\\media\\die.wav"
+LAUGHINGSND  WAVE DISCARDABLE "..\\media\\laughing.wav"
+LEVELWONSND  WAVE DISCARDABLE "..\\media\\levelwon.wav"
+LOCKSND      WAVE DISCARDABLE "..\\media\\lock.wav"
+SMALLKEYSND  WAVE DISCARDABLE "..\\media\\smallkey.wav"
+REVERSESND   WAVE DISCARDABLE "..\\media\\reverse.wav"
+TIMEBONUSSND WAVE DISCARDABLE "..\\media\\timebonus.wav"
+ONEUPSND     WAVE DISCARDABLE "..\\media\\oneup.wav"
+BOUNCE2SND   WAVE DISCARDABLE "..\\media\\bounce2.wav"
+
+
+//program icon
+PROG_ICON  ICON    DISCARDABLE      "..\\media\\Diamond.ico"
+
+//game menu
+MyMenu MENU DISCARDABLE
+BEGIN
+     POPUP "&Game"
+     BEGIN
+          MENUITEM "&New\tF2", GAME_NEW
+          MENUITEM "&Pause\tP", GAME_PAUSE
+          MENUITEM "&Restart level\tR",GAME_RESTARTLEVEL
+          MENUITEM "&Quit game\tQ",GAME_QUIT
+          MENUITEM SEPARATOR
+          MENUITEM "&Sound",GAME_SOUNDONOFF
+          MENUITEM "&Clear scores",GAME_CLEARSCORES
+          MENUITEM SEPARATOR
+          MENUITEM "E&xit\tESC", GAME_EXIT
+     END
+     POPUP "&Help"
+     BEGIN
+          MENUITEM "&About Diamonds", HELP_ABOUT
+     END
+END
+
+//hi score enter name dialog
+EnterName DIALOG DISCARDABLE 210,100,104,90
+STYLE WS_DLGFRAME | WS_POPUP
+FONT 8, "MS Shell Dlg"
+BEGIN
+    DEFPUSHBUTTON "&OK",IDOK,35,65,33,14
+    CTEXT         "Congratulations! You got a high score! Enter your name below.",0,10,7,84,45
+    EDITTEXT      NAME_INPUT,13,46,78,14,ES_AUTOHSCROLL
+END
+
+//about dialog
+About DIALOG DISCARDABLE  175, 125, 200, 50
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "About Diamonds"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "&OK",IDOK,140,20,50,14
+    GROUPBOX        "Diamonds 1.0",0,3,3,194,44
+    CTEXT           "Created November 2005\r\nby Matt Blaine", 0,16,20,110,20
+END
+
+//keyboard accelerators
+Accel ACCELERATORS
+BEGIN
+    VK_F2, KEY_NEW, VIRTKEY
+    "P", KEY_PAUSE, VIRTKEY
+    "R", KEY_RESTART, VIRTKEY
+    "Q", KEY_QUIT, VIRTKEY
+    VK_ESCAPE, KEY_EXIT, VIRTKEY
+END
