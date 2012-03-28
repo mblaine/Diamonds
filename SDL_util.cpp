@@ -9,7 +9,7 @@ SDL_Color SDL_RGB(int r, int g, int b)
    return color;
 }
 
-SDL_Surface* LoadSurface(char* filename)
+SDL_Surface* LoadSurface(const char* filename)
 {
   SDL_Surface *temp, *surface;
 

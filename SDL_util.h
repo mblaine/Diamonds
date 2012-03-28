@@ -7,7 +7,7 @@
 
 SDL_Color SDL_RGB(int r, int g, int b);
 
-SDL_Surface* LoadSurface(char* filename);
+SDL_Surface* LoadSurface(const char* filename);
 
 int Blit(SDL_Surface* src, int fromX, int fromY, int width, int height,
          SDL_Surface* dst, int   toX, int   toY);

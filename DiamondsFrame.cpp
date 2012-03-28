@@ -65,11 +65,16 @@ DiamondsFrame::DiamondsFrame() : wxFrame()
    SetMenuBar(menuBar);
    
    //program icons
+   #ifdef __WXMSW__ 
+   wxImage::AddHandler( new wxICOHandler );
+   SetIcon(wxIcon(wxT("A"), wxBITMAP_TYPE_ICO_RESOURCE));
+   #else
    wxIconBundle icons;
    wxImage::AddHandler( new wxXPMHandler );
-   icons.AddIcon(wxT("data/diamonds.xpm"), wxBITMAP_TYPE_XPM);
    icons.AddIcon(wxT("data/diamonds16.xpm"), wxBITMAP_TYPE_XPM);
+   icons.AddIcon(wxT("data/diamonds.xpm"), wxBITMAP_TYPE_XPM);
    SetIcons(icons);
+   #endif
    
    //read in or create new high scores file
    scores = new HiScore();
@@ -396,7 +401,7 @@ void DiamondsFrame::OnAbout(wxCommandEvent&)
 
    wxDialog dialog(this, wxID_ANY, wxT("About Diamonds"), wxDefaultPosition, wxDefaultSize);
    wxPanel panel(&dialog, wxID_ANY);
-   wxStaticBox box(&panel, wxID_ANY, wxT("Diamonds 0.4"), wxPoint(5, 5), wxSize(340, 175));
+   wxStaticBox box(&panel, wxID_ANY, wxT("Diamonds 0.4"), wxPoint(5, 5), wxSize(350, 175));
    wxStaticText text(&panel, wxID_ANY,
       wxT("Diamonds is a tribute to the original game, created by Oliver "
       "Dreer and released by Varcon Systems in 1992.\n\n"
@@ -405,13 +410,13 @@ void DiamondsFrame::OnAbout(wxCommandEvent&)
       "Source available at https://github.com/mblaine/Diamonds/\n\n"
       "© 2008 Matthew Blaine"
       ),
-      wxPoint(15, 25), wxSize(325, 125));
+      wxPoint(15, 25), wxSize(335, 125));
    wxButton okButton(&panel, wxID_OK, wxT("&OK"), wxPoint(138, 150), wxDefaultSize);
    
    vbox->Add(&panel, 1);
    
    dialog.SetSizer(vbox);
-   dialog.SetClientSize(350, 185);
+   dialog.SetClientSize(360, 185);
    dialog.Centre();
    dialog.ShowModal();
    dialog.Destroy();
