@@ -444,7 +444,7 @@ void DiamondsFrame::OnAbout(wxCommandEvent&)
       "This program is free software, released under the terms of the GNU "
       "General Public License v3 (http://www.gnu.org/licenses/).\n\n"
       "Source available at https://github.com/mblaine/Diamonds/\n\n"
-      "© 2008 Matthew Blaine"
+      "© 2008-2014 Matthew Blaine"
       ),
       wxPoint(15, 25), wxSize(335, 125));
    wxButton okButton(&panel, wxID_OK, wxT("&OK"), wxPoint(138, 150), wxDefaultSize);

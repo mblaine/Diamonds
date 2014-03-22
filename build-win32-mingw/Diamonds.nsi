@@ -94,7 +94,6 @@ Section "MainSection" SEC01
   CreateShortCut "$SMPROGRAMS\Diamonds\Diamonds Level Editor.lnk" "$INSTDIR\editor.exe"
   CreateShortCut "$SMPROGRAMS\Diamonds\Read Me.lnk" "$INSTDIR\README.txt"
   CreateShortCut "$SMPROGRAMS\Diamonds\License.lnk" "$INSTDIR\COPYING.txt"
-  CreateShortCut "$DESKTOP\Diamonds.lnk" "$INSTDIR\diamonds.exe"
   File "..\..\COPYING.txt"
   File "..\..\README.txt"
 SectionEnd

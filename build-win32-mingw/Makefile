@@ -4,12 +4,12 @@ WINDRES = windres.exe
 RES  = Diamonds_private.res
 OBJ  = DiamondsApp.o Constants.o SDLPanel.o SDL_util.o Ball.o Field.o HiScore.o Globals.o DiamondsFrame.o SDLSound.o Levelset.o Settings.o $(RES)
 LINKOBJ  = DiamondsApp.o Constants.o SDLPanel.o SDL_util.o Ball.o Field.o HiScore.o Globals.o DiamondsFrame.o SDLSound.o Levelset.o Settings.o $(RES)
-LIBS =  -L"lib" -mwindows -lmingw32 -lSDLmain -lSDL -lSDL_image -lSDL_mixer -lSDL_ttf -lwxmsw28_core -lwxbase28 -lcomdlg32 -luser32 -lgdi32 -lole32 -lwsock32 -lcomctl32 -lctl3d32 -lgcc -lstdc++ -lshell32 -loleaut32 -ladvapi32 -luuid -lwinspool  -s 
+LIBS =  -L"lib" -mwindows -lmingw32 -lSDLmain -lSDL -lSDL_image -lSDL_mixer -lSDL_ttf -lwxmsw28_core -lwxbase28 -lcomdlg32 -luser32 -lgdi32 -lole32 -lwsock32 -lcomctl32 -lctl3d32 -lshell32 -loleaut32 -ladvapi32 -luuid -lwinspool -static-libstdc++ -static-libgcc -s 
 INCS =  -I"include" 
 CXXINCS =  -I"C:/MinGW/include/SDL" -I"C:/MinGW/include/wxWidgets"  -I"include" 
 BIN  = diamonds.exe
-CXXFLAGS = $(CXXINCS)   -Wall
-CFLAGS = $(INCS)   -Wall
+CXXFLAGS = $(CXXINCS) -Wall
+CFLAGS = $(INCS) -Wall
 RM = rm -f
 
 .PHONY: all all-before all-after clean clean-custom
